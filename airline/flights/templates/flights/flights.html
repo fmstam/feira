@@ -19,6 +19,17 @@
  {% else %}
      <h1> Not Found </h1>
  {% endif %}
-
+ 
+ <h2>Add passenger:</h2>
+ <form action="{% url 'book' flight.id %}" method="POST">
+     {% csrf_token %}
+     <select name="passenger">
+         {% for passenger in non_passengers%}
+         <option value ="{{passenger.id}}"> {{passenger}}</option>
+         {% endfor %}
+     </select>
+     <input type="submit" name="Submit">
+ </form>
+ <a href="{% url 'index' %}">Flights</a>
      
 {% endblock %}

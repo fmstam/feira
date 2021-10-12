@@ -8,7 +8,7 @@
             "name": "Python: Django",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/lecture3/manage.py",
+            "program": "${workspaceFolder}/airline/manage.py",
             "args": [
                 "runserver"
             ],

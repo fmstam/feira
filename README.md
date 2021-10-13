@@ -1,6 +1,5 @@
 # Feira
-a lightweight commercial website
+A commercial website
 
-## current apps
-
+## Current apps:
  - **increase**: a simple bidding application

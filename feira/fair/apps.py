@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class FairbidConfig(AppConfig):
+class FairConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'fairbid'
+    name = 'fair'

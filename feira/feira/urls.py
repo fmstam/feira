@@ -22,9 +22,9 @@ from django.views.generic.base import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('fair/', include('fair.urls')),  # bidding
-    path(r'^accounts/', include('accounts.urls')), # accounts
+    path('accounts/', include('accounts.urls')), # accounts
     ## django auth built-ins https://github.com/django/django/blob/main/django/contrib/auth/urls.py
-    path(r'^accounts/', include('django.contrib.auth.urls')),
-    path('', TemplateView.as_view('home.html'), name="home")
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('', TemplateView.as_view(template_name='home.html'), name="home")
 
 ]

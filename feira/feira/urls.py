@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')), # accounts
     ## django auth built-ins https://github.com/django/django/blob/main/django/contrib/auth/urls.py
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', TemplateView.as_view(template_name='home.html'), name="home")
+    path('', TemplateView.as_view(template_name='home.html'), name="home"),
+    path('home', TemplateView.as_view(template_name='home.html'), name="home")
 
 ]

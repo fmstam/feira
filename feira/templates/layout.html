@@ -21,6 +21,21 @@
                 Not signed in.
             {% endif %}
         </div>
+
+        <!-- Messages and alerts go here -->
+        {% if messages %}
+        <div class="row">
+        <div class="col-sm-6 col-sm-offset-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
         <ul class="nav">
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'home' %}">Active Listings</a>

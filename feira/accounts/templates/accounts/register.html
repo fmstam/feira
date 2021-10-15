@@ -10,6 +10,7 @@
             {{form|crispy}}
             <button class="btn btn-primary" type="submit">Register</button>
         </form>
-        Have account? <a href='{% url 'login' %}'>Login</a> instead.
+        Have account? <a href="{% url 'accounts:login' %}">Login</a> instead.
     </div>
+
 {% endblock %}

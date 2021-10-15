@@ -1,25 +1,5 @@
 {% extends "layout.html" %}
 
-{% block body %}
+{% block content %}
     <h2>Active Listings: </h2>
-
-    {% if success_messages %}
-        {% for message in success_messages%}
-            <!-- requires bootstrap -->
-            <div class="alert alert-success" role="alert">
-                message
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    {% if fail_messages %}
-        {% for message in fail_messages%}
-            <!-- requires bootstrap -->
-            <div class="alert alert-danger" role="alert">
-                message
-            </div>
-        {% endfor %}
-    {% endif %}
-
-
 {% endblock %}

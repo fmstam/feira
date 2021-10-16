@@ -1,0 +1,16 @@
+{% extends "accounts/layout.html" %}
+
+{% block content %}
+
+    {% load crispy_forms_tags %} 
+    <div class="container py-4">
+        <h1> Login</h1>
+        <form method="POST">
+            {% csrf_token %}
+            {{form|crispy}}
+            <button class="btn btn-primary" type="submit">Login</button>
+        </form>
+        Doest not have an account? <a href="{% url 'accounts:register' %}">create one </a> .
+    </div>
+    
+{% endblock %}

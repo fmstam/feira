@@ -2,7 +2,9 @@ from operator import mod
 from typing import Iterable, Optional
 from unicodedata import name
 from django.db import models
+
 from django.contrib.auth.models import User
+from django.db.models.deletion import CASCADE
 from django.urls import reverse
 from django.utils import timezone
 
@@ -15,16 +17,23 @@ class Listing(models.Model):
 
     title = models.CharField(max_length=256)
     creation_date = models.DateTimeField(editable=False)
-    modification_date = models.DateTimeField()
+    modification_date = models.DateTimeField(editable=False)
     description = models.TextField(max_length=1024,
-                                  blank=True)
+                                    blank=True)
+    price = models.DecimalField(blank=False,
+                                decimal_places=2,
+                                max_digits=6,
+                                default=0)
+                                  
     image = models.ImageField(upload_to='listings_images',
                              blank=True, # not required in the form
                              null=True) # can be NULL in the db
+    owner = models.ForeignKey(User, 
+                                on_delete=CASCADE,
+                                related_name="user_listings") # user id
 
     # still_available = models.BooleanField()                                 
     # accept_offers = models.BooleanField()
-
 
     # to create unique URL for lists
     slug = models.SlugField(max_length=128,

@@ -8,7 +8,15 @@ from .forms import Listing, ListingForm
 
 
 class ListingView(SuccessMessageMixin, CreateView):
-    class_form = ListingForm
-    template_name = 'listings.html'
+    form_class = ListingForm
+    template_name = 'fair/listings.html'
+
+    def get(self, request, *args, **kwrags):
+        print('from the listingview get method')
+        listings = Listing.objects.all()
+        return render(request, 
+                     self.template_name,
+                     {'listings': listings})
+
 
     

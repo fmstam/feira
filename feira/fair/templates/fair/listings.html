@@ -1,9 +1,9 @@
 {% extends "home.html" %}
-    {% block listings %}
+    {% block content %}
     <h2>Active Listings</h2>
     <ul>
         {% for listing in listings %}
-        <!-- <form action="{% url 'fair:listing_details' listing.id %}">
+        <!-- <form action="{% url 'fair:listings' listing.id %}">
             {% csrf_token %}
             <button class="btn btn-link" id="edit_listing" type="submit"></button>
         </form> -->

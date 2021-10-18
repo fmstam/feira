@@ -1,15 +1,32 @@
 {% extends "home.html" %}
-    {% block content %}
-    <h2>Active Listings</h2>
-    <ul>
-        {% for listing in listings %}
-        <!-- <form action="{% url 'fair:listings' listing.id %}">
-            {% csrf_token %}
-            <button class="btn btn-link" id="edit_listing" type="submit"></button>
-        </form> -->
-            <li> {{listing.title}</li>    
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+    {% block listings %}
+    <hr class="lineBreak">     
+    <div class="container py-4">
+    <h2>Active Listings:</h2>
+
+    <div class="container-fluid bg-trasparent my-4 p-3" style="position: relative;>
+        <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3">
+        {% for listing in active_listings %}
+            <div class="col">
+                <div class="card h-100 shadow-sm"> 
+                    {% if listing.image %}
+                        {% thumbnail listing.image "200x200" crop="center" as im %}
+                            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="card-img-top" alt="image" />
+                        {% endthumbnail %}
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="clearfix mb-3"> <span class="float-start badge rounded-pill bg-primary"> {{listing.title}}</span> <span class="float-end price-hp">12354.00€</span> </div>
+                        <h5 class="card-title">listing.description.</h5>
+                        <div class="text-center my-4"> <a href="#" class="btn btn-warning">Check offer</a> </div>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+
     {% endblock %}
     
 

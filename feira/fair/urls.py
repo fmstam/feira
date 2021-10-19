@@ -8,7 +8,7 @@ urlpatterns =[
     path('', ListingView.as_view(), name='listings'),
     path('listings/', ListingView.as_view(), name='listings'),
     path('listings/user/<int:owner_id>', ListingView.as_view(), name='user_listings'),
-    path('listings/view/<int:listing_id>', ListingView.as_view(), name='view_a_listing'),
-    path('listings/edit/<int:listing_id>', ListingUpdateView.as_view(), name='edit_a_listing'),
+    path('listings/<int:pk>', ListingView.as_view(), name='view_a_listing'),
+    path('listings/<int:pk>/edit', ListingUpdateView.as_view(), name='edit_a_listing'),
     path('listings/new/', ListingCreateView.as_view(), name='create_a_listing')
 ]

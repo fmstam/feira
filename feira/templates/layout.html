@@ -64,9 +64,10 @@
                       </li>
                       {% else %}
                       <li class="nav-item">
-                       <p> Hi! <a class="nav-link" aria-current="page" href="{% url 'accounts:login' %}">Sign in</a> 
-                      
-                       or  <a class="nav-link" aria-current="page" href="{% url 'accounts:register' %}">register</a> </p>
+                        <a class="nav-link" aria-current="page" href="{% url 'accounts:login' %}">Sign in</a> 
+                      </li>
+                      <li class="nav-item"></li>
+                        <a class="nav-link" aria-current="page" href="{% url 'accounts:register' %}">Register</a> </p>
                       </li>
                       {% endif %}
                 </ul>

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'accounts',
     'fair',
     'crispy_forms',
+    'sorl.thumbnail',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -141,3 +142,8 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # Login and Logout
 LOGIN_REDIRECT_URL = '/home'
 LOGOUT_REDIRECT_URL = '/home'
+
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')

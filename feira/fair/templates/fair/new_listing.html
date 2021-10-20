@@ -1,0 +1,23 @@
+{% extends "home.html" %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+    {% block listings %}
+        <div class="container py-4">
+        <h2>New Listing:</h2>
+
+        {% if user.is_authenticated %}
+        <div class="container py-4">
+            <h1> Create a new listing.</h1>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy}}
+                <br>
+                <button class="btn btn-primary" type="submit">Save</button>
+                <input class="btn btn-link" type="button" value="Cancel" onclick="window.history.go(-1);"/>
+            </form>
+        </div>
+        {% endif %}
+    {% endblock %}
+    
+

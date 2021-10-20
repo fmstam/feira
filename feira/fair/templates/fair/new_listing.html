@@ -12,8 +12,9 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form|crispy}}
-                <input class="btn btn-link" type="button" value="Cancel" onclick="window.history.go(-1);"/>
+                <br>
                 <button class="btn btn-primary" type="submit">Save</button>
+                <input class="btn btn-link" type="button" value="Cancel" onclick="window.history.go(-1);"/>
             </form>
         </div>
         {% endif %}

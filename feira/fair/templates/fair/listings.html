@@ -15,14 +15,16 @@
 
                     {% if listing.image %}
                         {% thumbnail listing.image "200x200" crop="center" as im %}
+                        <a href="{% url 'fair:view_a_listing' listing.id%}">
                             <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="card-img-top" alt="image" />
+                        </a>
                         {% endthumbnail %}
                     {% endif %}
                     <div class="card-body">
                         <div class="clearfix mb-2"> 
                             <span class="float-start badge rounded-pill bg-primary"> {{listing.title}}</span> <span class="float-end price-hp">{{listing.price}}€</span> </div>
                         <h5 class="card-title"> {{ listing.description | truncatechars:24 }} </h5>
-                        <div class="text-center my-4"> <a href="{% url 'fair:view_a_listing' listing.id%}" class="btn btn-warning">Check listing</a> </div>
+                        <div class="text-center my-4"> <a href="{% url 'fair:view_a_listing' listing.id%}" class="btn btn-secondary">Check listing</a> </div>
                         <div class="clearfix mb-1"> 
                             <span class="float-start"><i class="fas fa-comment"></i></span> 
                             

@@ -3,15 +3,14 @@
 {% load thumbnail %}
 
     {% block listings %}
-    
+    {% block confirmation %}
+    {% endblock %}
     <div class="container main-container">
         <div class="row d-flex justify-content-center">
-                    <div class="col-md-offset-2 col-md-7 content">
+                    <div class="col-md-offset-2 col-md-3 content">
                         <div class="card shadow-sm"> 
                             {% if listing.image %}
-                                {% thumbnail listing.image "300x300" crop="center" as im %}
-                                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="card-img-top" alt="image" />
-                                {% endthumbnail %}
+                                <img src="{{ listing.image.url }}" width="{{ listing.image.width }}" height="{{ listing.image.height }}" class="card-img-top" alt="image" />
                             {% endif %}
                             <div class="card-body">    
                                 <h5 class="card-title"> {{ listing.title}} </h5>

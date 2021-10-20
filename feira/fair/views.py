@@ -1,13 +1,26 @@
 from django import shortcuts
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from .forms import ListingForm
 from .models import Listing
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, get_list_or_404
+
+
+
+class OwnershipMixin():
+    """
+    A validation mixin to check the ownership of a listing when editing and deleting listings
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().owner != request.user:
+            return HttpResponseForbidden()
+        
+        return super(OwnershipMixin, self).dispatch(request, *args, **kwargs)
 
 
 # view class
@@ -68,9 +81,10 @@ class ListingView(CreateView):
 
 
 # create new class
-class ListingCreateView(LoginRequiredMixin, CreateView):
+class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     form_class = ListingForm
     template_name = 'fair/new_listing.html'
+    success_message = "Listing is created successfully"
     
     def get_success_url(self, **kwargs) -> str:
         """instead of using reverse_lazy"""
@@ -90,10 +104,11 @@ class ListingCreateView(LoginRequiredMixin, CreateView):
 
 
 # edit class
-class ListingUpdateView(LoginRequiredMixin, UpdateView):
+class ListingUpdateView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, UpdateView):
     form_class = ListingForm
     model = Listing
     template_name = 'fair/new_listing.html'
+    success_message = "Listing is updated successfully"
 
     def get_success_url(self, **kwargs) -> str:
         """instead of using reverse_lazy"""
@@ -110,3 +125,22 @@ class ListingUpdateView(LoginRequiredMixin, UpdateView):
         self.object.owner = self.request.user # set the fk
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
+class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, DeleteView):
+    model = Listing
+    success_message = "Listing is deleted successfully"
+
+    def get_success_url(self, **kwargs) -> str:
+        """instead of using reverse_lazy"""
+        return reverse('home')
+
+    def get_login_url(self) -> str:
+        """
+        Make sure the user is logged in
+        """
+        return reverse('accounts:login')
+
+
+
+

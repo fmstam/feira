@@ -29,5 +29,10 @@ class LoginView(SuccessMessageMixin, views.LoginView):
     form_class = BasicAuthenticationForm
     template_name ='accounts/login.html'
     
-
+class LogoutView(SuccessMessageMixin, views.LogoutView):
+    success_message = "You have logged out successfully"
+    
+    def get_success_url(self, **kwargs) -> str:
+        """or using reverse_lazy"""
+        return reverse('home')
     

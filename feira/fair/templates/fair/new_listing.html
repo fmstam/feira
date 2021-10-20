@@ -11,7 +11,8 @@
             <h1> Create a new listing.</h1>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{form|crispy}}
+                {{ form|crispy}}
+                <input class="btn btn-link" type="button" value="Cancel" onclick="window.history.go(-1);"/>
                 <button class="btn btn-primary" type="submit">Save</button>
             </form>
         </div>

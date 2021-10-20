@@ -1,12 +1,35 @@
 from operator import mod
 from typing import Iterable, Optional
-from unicodedata import name
+from unicodedata import category, name
 from django.db import models
 
 from django.contrib.auth.models import User
 from django.db.models.deletion import CASCADE
 from django.urls import reverse
 from django.utils import timezone
+
+
+
+
+class Category(models.Model):
+        """
+        a Typical category class
+        """
+
+        name = models.CharField(max_length=64)
+        slug = models.SlugField(max_length=64, 
+                                unique=True,
+                                default='name')
+
+
+        class Meta:
+            ordering = ['name']
+            verbose_name_plural = 'categories'
+
+        def get_absolute_url(self):
+            return reverse('fair:category_listings', args=[self.slug])
+        def __str__(self) -> str:
+            return self.name
 
 
 class Listing(models.Model):
@@ -31,6 +54,10 @@ class Listing(models.Model):
     owner = models.ForeignKey(User, 
                                 on_delete=CASCADE,
                                 related_name="user_listings") # user id
+    category = models.ForeignKey(Category, 
+                                on_delete=CASCADE,
+                                related_name="categories",
+                                null=False)   # category 
 
     # still_available = models.BooleanField()                                 
     # accept_offers = models.BooleanField()
@@ -46,6 +73,7 @@ class Listing(models.Model):
     class Meta:
         ordering = ['-modification_date']
         index_together = (('id', 'slug'))
+        constraints = [models.CheckConstraint(check=models.Q(price__gte='0'), name='price_non_negative'),]
 
     def save(self, *args, **kwargs):
         """
@@ -58,9 +86,12 @@ class Listing(models.Model):
         return super(Listing, self).save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('fair:listings', args=[self.slug])
+        return reverse('fair:category_listings', args=[self.slug])
     
     
+
+    
+
 
 
     

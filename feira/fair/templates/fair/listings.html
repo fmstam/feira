@@ -7,14 +7,16 @@
     <h2>Active Listings:</h2>
 
     <!-- bootstrap cards -->
+
+    <!-- row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3 -->
     <div class="container-fluid bg-trasparent my-4 p-3" style="position: relative min-width: 18rem;"">
-        <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3">
+        <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3 ">
         {% for listing in active_listings %}
             <div class="col">
                 <div class="card h-100 shadow-sm"> 
 
                     {% if listing.image %}
-                        {% thumbnail listing.image "200x200" crop="center" as im %}
+                        {% thumbnail listing.image "300x300" padding="True" as im %}
                         <a href="{% url 'fair:view_a_listing' listing.id%}">
                             <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="card-img-top" alt="image" />
                         </a>
@@ -22,11 +24,11 @@
                     {% endif %}
                     <div class="card-body">
                         <div class="clearfix mb-2"> 
-                            <span class="float-start badge rounded-pill bg-primary"> {{listing.title}}</span> <span class="float-end price-hp">{{listing.price}}€</span> </div>
-                        <h5 class="card-title"> {{ listing.description | truncatechars:24 }} </h5>
-                        <div class="text-center my-4"> <a href="{% url 'fair:view_a_listing' listing.id%}" class="btn btn-secondary">Check listing</a> </div>
+                            <span class="float-start badge rounded-pill bg-primary"> {{ listing.category.name }}</span> <span class="float-end price-hp">{{listing.price}}€</span> </div>
+                        <h5 class="card-title"> {{ listing.title | truncatechars:24 }} </h5>
+                        <!-- <div class="text-center my-4"> <a href="{% url 'fair:view_a_listing' listing.id%}" class="btn btn-secondary">Check listing</a> </div> -->
                         <div class="clearfix mb-1"> 
-                            <span class="float-start"><i class="fas fa-comment"></i></span> 
+                            <!-- <span class="float-start"><i class="fas fa-comment"></i></span>  -->
                             
                             <!--  check if the user is the owner -->
                             {% if user.is_authenticated %}

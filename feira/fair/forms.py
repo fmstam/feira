@@ -11,8 +11,13 @@ from .models import Listing
 class ListingForm(forms.ModelForm):
     "Allow user to add a new listing"
 
+    ## frontend constraints
+
+    # price is positive value, see the model for the backend constraint
+    price = forms.DecimalField(required=True, max_digits=6, min_value=0)
+
     class Meta:
         model = Listing
-        fields = ['title', 'description', 'price', 'image']
+        fields = ['title', 'price', 'category', 'description', 'image']
 
     

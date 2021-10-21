@@ -1,5 +1,5 @@
 # Feira
-A commercial website similar to typical marketplace services powered by machine learning.
+A commercial platform powered by machine learning backend services.
 
 
 Pre-requisites:
@@ -13,13 +13,11 @@ Pre-requisites:
 
 
 ## Current apps:
- - **fair**: a simple auction app where the user can upload an image of the object/objects and the system is able to detect objects and assign them to the correct categories using a deep learning model. The current version uses the typical uses YOLO V5 to detect objects.
+- **fair**: a simple marketplace app where users sell and buy things. The system is backed by a lightweight recommendation system.
 
 - **accounts**: a typical django app for account management
-  
 
+   >> Note: more apps will be added to the project with more machine learning support.
 
-
-    >> Note: more apps will be added to the project with more machine learning support.
-
-
+## Security:
+ The system uses user-permissions, encryption, ... and so on to maintain high level of security.

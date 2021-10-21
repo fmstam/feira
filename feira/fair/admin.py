@@ -9,3 +9,7 @@ class ListingAdmin(admin.ModelAdmin):
 admin.site.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
+
+admin.site.register(Similarity)
+class SimilarityAdmin(admin.ModelAdmin):
+    list_display = ['score', 'listing_1', 'listing_2']

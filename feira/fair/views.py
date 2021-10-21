@@ -27,7 +27,6 @@ class OwnershipMixin():
 class ListingView(CreateView):
     form_class = ListingForm
     
-
     def get_listing(self, filter, single=False):
         """
         Retrives listings based on the 'filter' or 404
@@ -35,7 +34,11 @@ class ListingView(CreateView):
         """
         if single:
             listing = get_object_or_404(Listing, **filter)
-            listing_dict = {'listing': listing }
+            pks = listing.related_listing_1.values_list('listing_2', flat=True).order_by('-score')[:5]
+            recommendations = Listing.objects.filter(pk__in=pks).all()
+            listing_dict = {'listing': listing, 
+                            'recommendations': recommendations
+                            }
             template_name='fair/listing.html'
         else:
             if not filter: # all objects no filter
@@ -62,6 +65,7 @@ class ListingView(CreateView):
             if 'owner_id' in kwargs.keys():  # for a specific user
                 template_name, listing_dict = self.get_listing({'owner': kwargs['owner_id']})
 
+            # another filter could be
             # if category_id in kwargs.keys(): # for a given category
                 # listing_dict = self.get_listing({'category': kwargs['category_id']})
 
@@ -140,7 +144,3 @@ class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         Make sure the user is logged in
         """
         return reverse('accounts:login')
-
-
-
-

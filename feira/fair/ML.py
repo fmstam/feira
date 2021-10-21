@@ -4,6 +4,7 @@
 # typical imports
 import itertools
 import os
+from tqdm import tqdm
 
 # sklearn
 from sklearn import metrics
@@ -28,7 +29,7 @@ class SimilarityScorer():
     def __init__(self,
                 metric=metrics.pairwise.cosine_similarity,
                 images_path=settings.MEDIA_ROOT,
-                image_input_size=224, # imagenet input shape
+                image_input_size=224, # typical input shape for most nets
                 feature_extractor=None,
                 preprocessor=None):
 
@@ -41,20 +42,23 @@ class SimilarityScorer():
             # B5 acheives quite good with a smaller number of weights compared to others
             # net = models.efficientnet_b5(pretrained=True) 
             self.net = models.resnet50(pretrained=True) 
-            self.return_nodes = {"layer4.2.relu_2": "layer4"}
+            self.net.eval()
+            # self.return_nodes = {"layer4.2.relu_2": "layer4"}
+            self.return_nodes = {"fc": "fc"}
 
-        self.feature_extractor =  models.feature_extraction.create_feature_extractor(net)
+        self.feature_extractor =  models.feature_extraction.create_feature_extractor(self.net, 
+                                                                                    return_nodes=self.return_nodes)
         
         if not preprocessor:
             self.preprocessor = transforms.Compose([
             transforms.Resize(256), # scale it 
-            transforms.CenterCrop(image_input_size), # get the center
+            transforms.CenterCrop(image_input_size), # get the center at the required input shape
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),])
         else:
             self.preprocessor = preprocessor
         
-    def calc_all_similarities(self):
+    def calc_all_similarities(self, request):
         """
         Calculate the similarities of all listings and store them in the similarly table (see models.py).
         It will replace the existing scores in the similarity table.
@@ -71,11 +75,14 @@ class SimilarityScorer():
         # the similarity matrix/table is symmetric therefore we need to calculate
         # it for lower (or upper) traingel of the matrix
 
+        # clear the similarity table
+        Similarity.objects.all().delete()
         
         # order them by pk
         listings = Listing.objects.order_by('pk') 
 
-        for listing_1, listing_2 in itertools.combinations(listings, 2): # unrepeated combinations
+        # this loop runs for sum(n-1), where n is the number of listings in the database
+        for listing_1, listing_2 in tqdm(itertools.combinations(listings, 2)): # unrepeated combinations
             # get score
             score = self.calc_similarities(listing_1, listing_2)
             # store it
@@ -98,15 +105,14 @@ class SimilarityScorer():
             input_image = Image.open(f'{self.images_path}{os.sep}{listing.image}')
 
             # transform the image to fit the model
-            input_tensor = self.preprocess(input_image) 
+            input_tensor = self.preprocessor(input_image) 
             input_batch = input_tensor.unsqueeze(0) # add a mini-batch dim. The model expects (batch, channels, width, height)
             
-
             return  self.feature_extractor(input_batch)
         
         # get features
-        listing_1_features = get_features(listing=listing_1)
-        listing_2_features = get_features(listing=listing_2)
+        listing_1_features = get_features(listing=listing_1)['fc'].detach().numpy()
+        listing_2_features = get_features(listing=listing_2)['fc'].detach().numpy()
 
         # get similarities
         score = self.metric(listing_1_features, listing_2_features)

@@ -39,7 +39,10 @@ class SimilarityScorer():
         if not self.feature_extractor:
             # efficientnet https://ai.googleblog.com/2019/05/efficientnet-improving-accuracy-and.html
             # B5 acheives quite good with a smaller number of weights compared to others
-            net = models.efficientnet_b5(pretrained=True) 
+            # net = models.efficientnet_b5(pretrained=True) 
+            self.net = models.resnet50(pretrained=True) 
+            self.return_nodes = {"layer4.2.relu_2": "layer4"}
+
         self.feature_extractor =  models.feature_extraction.create_feature_extractor(net)
         
         if not preprocessor:
@@ -98,6 +101,7 @@ class SimilarityScorer():
             input_tensor = self.preprocess(input_image) 
             input_batch = input_tensor.unsqueeze(0) # add a mini-batch dim. The model expects (batch, channels, width, height)
             
+
             return  self.feature_extractor(input_batch)
         
         # get features

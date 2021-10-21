@@ -19,7 +19,7 @@ from .models import Listing, Category
 # setup 
 data_path =  "/home/ftam/Downloads/clothing-dataset-small-master/dataset"
 data_folders = {'Dress': 'dress', 'Shirt': 'shirt', 'toptee':'toptee'} # categories in the listing
-n_listings =  5
+n_listings =  100
 prices =  range(5, 120, 5)
 unique =  True
 extensions =  ['*.jpeg', '*.jpg', '*.png']

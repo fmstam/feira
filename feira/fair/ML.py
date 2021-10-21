@@ -6,7 +6,7 @@ import itertools
 import os
 
 # sklearn
-from sklearn import metrics.pairwise as metrics
+from sklearn import metrics
 
 # torch stuff
 from PIL import Image
@@ -15,6 +15,8 @@ from torchvision import transforms, models
 # django
 from .models import Listing, Similarity
 from django.conf import settings
+from django.http import HttpResponseRedirect
+from django.urls.base import reverse
 
 
 
@@ -24,7 +26,7 @@ class SimilarityScorer():
     """
 
     def __init__(self,
-                metric=metrics.cosine_similarity,
+                metric=metrics.pairwise.cosine_similarity,
                 images_path=settings.MEDIA_ROOT,
                 image_input_size=224, # imagenet input shape
                 feature_extractor=None,
@@ -80,9 +82,7 @@ class SimilarityScorer():
             similarity.save()
 
 
-
-
-
+        return HttpResponseRedirect(reverse('home'))
 
     def calc_similarities(self, listing_1, listing_2 ):
         """ 

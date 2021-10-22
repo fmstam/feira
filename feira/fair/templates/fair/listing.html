@@ -40,13 +40,14 @@
 
     <!-- Recommendations -->
     <div class="container-fluid bg-trasparent my-4 p-3" style="position: relative min-width: 18rem;"">
-        <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3 ">
+        <div class="row d-flex justify-content-center">
+            <!-- row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3  -->
         {% for listing in recommendations %}
             <div class="col">
                 <div class="card h-100 shadow-sm"> 
                     {% if listing.image %}
                     <a href="{% url 'fair:view_a_listing' listing.id%}">
-                        {% thumbnail listing.image "200x200" padding="True" as im %}
+                        {% thumbnail listing.image "250x250" padding="True" as im %}
                             <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="card-img-top" alt="image" />
                     </a>
                         {% endthumbnail %}

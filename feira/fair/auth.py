@@ -10,15 +10,33 @@ class AuthenticationManager():
     A helper class to manage the permissions and tokens
     """
 
+    # premissions
+
+    # listings
+    VIEW_LISTING = "api.view_listing"
+    CHANGE_LISTING = "api.change_listing"
+
+    # logs
+    VIEW_ACTIVITY_LOG = "api.view_activity_log"
+    CHANGE_ACTIVITY_LOG = "api.change_activity_log"
+
+    # ML 
+    REBASE_ML = "api.rebase_ml"
+    CHANGE_CATEGORIES = "api.change_categories"
+    CREATE_DUMMY_LISTINGS = "api.create_dummy_lists"
+
+    } 
     # group_name: [api.privilege, ...] dictionary
     group_permissions = {
-                        "manager": ["api.create_dummy_lists", 
-                                    "api.rebase_ml",
-                                    "api.change_categories"],
-                        "user": ["api.view_listing",
-                                "api.change_listing"],
-                        "guest": ["api.view_listing"]
-                    }
+                        "manager": [CHANGE_CATEGORIES, 
+                                    CHANGE_CATEGORIES,
+                                    CREATE_DUMMY_LISTINGS],
+                                    
+                        "user": [VIEW_LISTING,
+                                CHANGE_LISTING],
+
+                        "guest": [VIEW_LISTING]
+    }
     
     
     @classmethod

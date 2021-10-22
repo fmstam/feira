@@ -10,7 +10,6 @@ import random
 from pathlib import Path
 import shutil
 
-
 # django and project stuff
 from django.http import HttpResponseRedirect
 from django.urls.base import reverse
@@ -29,9 +28,6 @@ def load_configurations(file='configurations.json', block="description"):
             configurations = json.load(block)
     
     return configurations
-
-
-
 
 ### Dummy listings related helpers
 # setup 

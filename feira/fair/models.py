@@ -1,13 +1,21 @@
-from operator import mod
-from typing import Iterable, Optional
-from unicodedata import category, name
+# models
 from django.db import models
-
-from django.contrib.auth.models import User
 from django.db.models.deletion import CASCADE
-from django.urls import reverse
 from django.utils import timezone
 
+# urls
+from django.urls import reverse
+
+
+
+# auth imports
+from django.contrib.auth.models import User
+
+## set permissions imports
+from .auth import AuthenticationManager # our manager
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from guardian.shortcuts import assign_perm
 
 
 
@@ -89,11 +97,15 @@ class Listing(models.Model):
     def get_absolute_url(self):
         return reverse('fair:category_listings', args=[self.slug])
     
-    
 
+# set permission post-saving
+@receiver(post_save, sender=Listing)
+def set_listing_premissions(sender, instance, **kwargs):
+    user = User.objects.get(id=instance.owner.id)
+    assign_perm(AuthenticationManager.CHANGE_LISTING, user) # on the model
+    assign_perm(AuthenticationManager.CHANGE_LISTING, user, instance) # on the instance
     
 ## ML-related models/tables
-
 class Similarity(models.Model):
     """
     Represents the similarity matrix between two listings:

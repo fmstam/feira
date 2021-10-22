@@ -2,7 +2,7 @@ from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.views.generic.base import TemplateView
 from .views import ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView
-from .helper import create_listings
+from .helpers import create_listings
 from .ML import SimilarityScorer
 
 app_name ='fair'

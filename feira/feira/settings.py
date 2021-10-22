@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'fair',
     'crispy_forms',
     'sorl.thumbnail',
+    'guardian',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -147,3 +148,11 @@ LOGOUT_REDIRECT_URL = '/home'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+
+# add guardian backend
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend'
+
+)

@@ -1,0 +1,4 @@
+tensorflow-2.6.0
+Django-3.2.8
+django-crispy-forms-1.13.0
+sorl-thumbnail-12.7.0

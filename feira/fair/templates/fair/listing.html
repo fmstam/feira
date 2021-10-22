@@ -5,6 +5,7 @@
     {% block listings %}
     {% block confirmation %}
     {% endblock %}
+
     <div class="container main-container">
         <div class="row d-flex justify-content-center">
                     <div class="col-md-offset-2 col-md-3 content">
@@ -33,6 +34,48 @@
                     </div> 
             
             </div>
+    </div>
+
+
+
+    <!-- Recommendations -->
+    <div class="container-fluid bg-trasparent my-4 p-3" style="position: relative min-width: 18rem;"">
+        <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3 ">
+        {% for listing in recommendations %}
+            <div class="col">
+                <div class="card h-100 shadow-sm"> 
+                    {% if listing.image %}
+                    <a href="{% url 'fair:view_a_listing' listing.id%}">
+                        {% thumbnail listing.image "200x200" padding="True" as im %}
+                            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="card-img-top" alt="image" />
+                    </a>
+                        {% endthumbnail %}
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="clearfix mb-2"> 
+                            <span class="float-start badge rounded-pill bg-primary"> {{ listing.category.name }}</span> <span class="float-end price-hp">{{listing.price}}€</span> </div>
+                        <h5 class="card-title"> {{ listing.title | truncatechars:24 }} </h5>
+                        <div class="clearfix mb-1"> 
+                            <!-- <span class="float-start"><i class="fas fa-comment"></i></span>  -->
+                            
+                            <!--  check if the user is the owner -->
+                            {% if user.is_authenticated %}
+                                {% if user.id == listing.owner_id %}
+                                    <span class="float-start">
+                                        <a href="{% url 'fair:edit_a_listing' listing.id %}"><i class="fas fa-edit"></i></a>
+                                    </span> 
+                                    <span class="float-end">
+                                        <a href="{% url 'fair:delete_a_listing' listing.id %}"><i class="far fa-trash-alt"></i></a>
+                                    </span> 
+                                {% else %}
+                                    <span class="float-end"><i class="fas fa-plus"></i></span> 
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
     {% endblock %}
     

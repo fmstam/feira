@@ -91,6 +91,23 @@ class Listing(models.Model):
     
 
     
+## ML-related models/tables
+
+class Similarity(models.Model):
+    """
+    Represents the similarity matrix between two listing:
+    - listing_key: first listing, usually 
+    - listing_query: second listing
+
+    NOTE: A better way would be a sparse datastructure which I will do in the second sprint.
+    """
+    score = models.FloatField(blank=True, null=True)
+    listing_1 = models.ForeignKey(Listing, on_delete=CASCADE, related_name='related_listing_1')
+    listing_2 = models.ForeignKey(Listing, on_delete=CASCADE, related_name='related_listing_2')
+
+    class Meta:
+        verbose_name_plural = 'Similarities'
+
 
 
 

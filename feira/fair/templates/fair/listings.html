@@ -14,7 +14,6 @@
         {% for listing in active_listings %}
             <div class="col">
                 <div class="card h-100 shadow-sm"> 
-
                     {% if listing.image %}
                         {% thumbnail listing.image "300x300" padding="True" as im %}
                         <a href="{% url 'fair:view_a_listing' listing.id%}">

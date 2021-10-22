@@ -1,0 +1,27 @@
+{
+    "date_time": "${now()}",
+    "description": "Development configurations of the project",
+    "mode": "debug", 
+    
+    "group_permissions":
+    {
+        "manager": ["create_dummy_lists", 
+                    "rebase_ml",
+                    "change_categories"],
+        "user": ["view_listing",
+                    "change_listing"],
+        "guest": ["view_listing"]
+
+    },
+
+    "dummy_listings":
+        {   
+            "data_path": "/home/ftam/Downloads/clothing-dataset-small-master/dataset",
+            "data_folders":{"Dress": "dress", "Shirt": "shirt", "toptee":"toptee"},
+            "n_listings": 100,
+            "prices": [5, 120, 5],
+            "unique": 1,
+            "extensions":  ["*.jpeg", "*.jpg", "*.png"]
+        }
+
+}

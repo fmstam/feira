@@ -9,7 +9,6 @@ from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.db.models import Q
-from .auth import AuthenticationManager
 
 
 
@@ -19,7 +18,7 @@ class OwnershipMixin():
     """
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.has_perm(AuthenticationManager.CHANGE_LISTING, self.get_object()):
+        if self.get_object().owner != request.user:
             return HttpResponseForbidden()
         
         return super(OwnershipMixin, self).dispatch(request, *args, **kwargs)

@@ -101,7 +101,7 @@ class Listing(models.Model):
 # set permission post-saving
 @receiver(post_save, sender=Listing)
 def set_listing_premissions(sender, instance, **kwargs):
-    user = User.objects.get(id=instance.owner)
+    user = User.objects.get(id=instance.owner.id)
     assign_perm(AuthenticationManager.CHANGE_LISTING, user) # on the model
     assign_perm(AuthenticationManager.CHANGE_LISTING, user, instance) # on the instance
     

@@ -4,10 +4,11 @@ from django.http.response import HttpResponse, HttpResponseForbidden, HttpRespon
 from django.shortcuts import render
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from .forms import ListingForm
-from .models import Listing
+from .models import Listing, Similarity
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, get_list_or_404
+from django.db.models import Q
 
 
 
@@ -32,9 +33,17 @@ class ListingView(CreateView):
         Retrives listings based on the 'filter' or 404
         Returns the listing dictionary to be sent to the template
         """
-        if single:
-            listing = get_object_or_404(Listing, **filter)
-            pks = listing.related_listing_1.values_list('listing_2', flat=True).order_by('-score')[:5]
+        if single: # when viewing a single listing
+            listing = get_object_or_404(Listing, **filter) # get the listing
+            
+            # and get the recommendations
+            # since the table sparse, we compare both fks
+            ids = Similarity.objects.filter(Q(listing_1 = listing) | Q(listing_2 = listing)).values_list('listing_1', 'listing_2').order_by('-score')[:5]
+            
+            # cobmine them, I am sure there is a better dj-way than classic list comperhension
+            pks = set([id[0] for id in ids] + [id[1] for id in ids])
+            pks.remove(listing.id) # do not recommend the same listing
+
             recommendations = Listing.objects.filter(pk__in=pks).all()
             listing_dict = {'listing': listing, 
                             'recommendations': recommendations

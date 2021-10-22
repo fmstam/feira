@@ -59,6 +59,7 @@ class Listing(models.Model):
                                 related_name="categories",
                                 null=False)   # category 
 
+    # other possible fields 
     # still_available = models.BooleanField()                                 
     # accept_offers = models.BooleanField()
 
@@ -95,11 +96,12 @@ class Listing(models.Model):
 
 class Similarity(models.Model):
     """
-    Represents the similarity matrix between two listing:
-    - listing_key: first listing, usually 
-    - listing_query: second listing
+    Represents the similarity matrix between two listings:
+    - listing_1: first listing
+    - listing_1: second listing
 
     NOTE: A better way would be a sparse datastructure which I will do in the second sprint.
+    For now allowing the fields to be blank will make things fine
     """
     score = models.FloatField(blank=True, null=True)
     listing_1 = models.ForeignKey(Listing, on_delete=CASCADE, related_name='related_listing_1')
@@ -107,8 +109,4 @@ class Similarity(models.Model):
 
     class Meta:
         verbose_name_plural = 'Similarities'
-
-
-
-
     

@@ -2,49 +2,49 @@
     Permissions and Authentication helpers
 """
 
-
-
-class AuthenticationManager():
+class AuthTools():
     """
     A helper class to manage the permissions and tokens
     """
 
-    # premissions
+    ###### groups
+    MANAGER = "manager"
+    USER    = "user"
 
+    ###### Premissions
     # listings
-    VIEW_LISTING = "api.view_listing"
-    CHANGE_LISTING = "api.change_listing"
+    VIEW_LISTING   = "fair.view_listing"
+    CHANGE_LISTING = "fair.change_listing"
+    DELETE_LISTING = "fair.change_listing"
 
     # logs
-    VIEW_ACTIVITY_LOG = "api.view_activity_log"
+    VIEW_ACTIVITY_LOG   = "api.view_activity_log"
     CHANGE_ACTIVITY_LOG = "api.change_activity_log"
 
     # ML 
-    REBASE_ML = "api.rebase_ml"
-    CHANGE_CATEGORIES = "api.change_categories"
+    REBASE_ML             = "api.rebase_ml"
+    CHANGE_CATEGORIES     = "api.change_categories"
     CREATE_DUMMY_LISTINGS = "api.create_dummy_lists"
 
     
     # group_name: [api.privilege, ...] dictionary
     group_permissions = {
-                        "manager": [CHANGE_CATEGORIES, 
-                                    CHANGE_CATEGORIES,
-                                    CREATE_DUMMY_LISTINGS],
+                        "manager": [VIEW_LISTING, 
+                                    CHANGE_LISTING,
+                                    DELETE_LISTING],
                                     
                         "user": [VIEW_LISTING,
-                                CHANGE_LISTING],
-
-                        "guest": [VIEW_LISTING]
+                                CHANGE_LISTING,
+                                DELETE_LISTING],
     }
     
-    @classmethod
-    def initialize(cls):
-        
-        
+    @staticmethod
+    def initialize(sender, **kwargs):
+        AuthTools.assign_permissions(AuthTools.group_permissions)
 
-    @classmethod
-    def assing_permissions(cls, 
-                         group_permissions_dict): 
+   
+    @staticmethod
+    def assign_permissions (group_permissions_dict): 
         """
         Assing permissions to a group.
 
@@ -53,23 +53,31 @@ class AuthenticationManager():
         from guardian.shortcuts import assign_perm
         from django.contrib.auth import models as auth_models
 
-        for group_name, permissions in group_permissions_dict:
+        for group_name, permissions in group_permissions_dict.items():
             group = auth_models.Group.objects.get(name=group_name)
             for permission in permissions:
                 assign_perm(permission, group)
 
-    @classmethod
-    def has_permission(user, permissions, object):
+
+
+    @staticmethod
+    def group_has_permission(group, permissions, object):
         """
-        Check if ``user`` has ``permissions`` on ``object``
+        Check if ``group`` has ``permissions`` on ``object``
         """
-        from django.contrib.auth import get_objects_for_group
-        for group in user.group.all():
-            if get_objects_for_group(group=group, 
-                    perms=permissions).filter(id=object.id).exists():
+        from guardian.shortcuts import get_objects_for_group
+
+        return get_objects_for_group(group=group, 
+                    perms=permissions).filter(id=object.id).exists()
+
+    @staticmethod
+    def user_has_group_permission(user, permissions, object):
+        """
+        Check if ``user`` belongs to a group that has ``permissions`` on ``object``
+        """
+
+        for group in user.groups.all():
+            if AuthTools.group_has_permission(group, permissions, object):
                 return True
-
-        return  False
-
-
-
+        
+        return False

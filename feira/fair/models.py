@@ -1,21 +1,15 @@
 # models
+from typing import List
 from django.db import models
 from django.db.models.deletion import CASCADE
 from django.utils import timezone
+from django.core import serializers
 
 # urls
 from django.urls import reverse
 
-
-
 # auth imports
 from django.contrib.auth.models import User
-
-## set permissions imports
-from .auth import AuthenticationManager # our manager
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-from guardian.shortcuts import assign_perm
 
 
 
@@ -65,7 +59,7 @@ class Listing(models.Model):
     category = models.ForeignKey(Category, 
                                 on_delete=CASCADE,
                                 related_name="categories",
-                                null=False)   # category 
+                                null=True)   # category 
 
     # other possible fields 
     # still_available = models.BooleanField()                                 
@@ -98,13 +92,35 @@ class Listing(models.Model):
         return reverse('fair:category_listings', args=[self.slug])
     
 
-# set permission post-saving
-@receiver(post_save, sender=Listing)
-def set_listing_premissions(sender, instance, **kwargs):
-    user = User.objects.get(id=instance.owner.id)
-    assign_perm(AuthenticationManager.CHANGE_LISTING, user) # on the model
-    assign_perm(AuthenticationManager.CHANGE_LISTING, user, instance) # on the instance
+## Activity log models
+
+class ActivityLog(models.Model):
+    by = models.ForeignKey(User, 
+                            null=True,
+                            on_delete=models.SET_NULL) # let it there if the user gets deleted
+    action = models.CharField(max_length=256)
+    at = models.DateTimeField()
+
+class DeletedData(models.Model):
+    model_name  = models.CharField(max_length=200) #
+    instance_id = models.IntegerField()
+    data        = models.TextField()
+
     
+    @classmethod
+    def restore_deleted(cls, instance_id):
+        """
+        Restore a deleted object.
+        To see how an object is handeled see post_delete receivers in signal.py
+        """
+        deleted =  cls.objects.get(model_name = 'Listing', instance_id=instance_id)
+        for instance in serializers.deserialize('json', deleted.data):
+            instance.save()
+            deleted.delete()
+
+    
+
+
 ## ML-related models/tables
 class Similarity(models.Model):
     """

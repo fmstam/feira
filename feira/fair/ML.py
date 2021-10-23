@@ -25,7 +25,6 @@ class SimilarityScorer():
     """
     Calculate the similarities between listing and store them in a table.
     """
-
     def __init__(self,
                 metric=metrics.pairwise.cosine_similarity,
                 images_path=settings.MEDIA_ROOT,

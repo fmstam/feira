@@ -6,5 +6,5 @@ class FairConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'fair'
 
-    def ready(self):
-        post_migrate.connect(AuthenticationManager.assing_permissions(AuthenticationManager.group_permissions))
+    # def ready(self):
+    #     post_migrate.connect(AuthenticationManager.initialize, sender=self)

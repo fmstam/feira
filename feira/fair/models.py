@@ -65,7 +65,7 @@ class Listing(models.Model):
     category = models.ForeignKey(Category, 
                                 on_delete=CASCADE,
                                 related_name="categories",
-                                null=False)   # category 
+                                null=True)   # category 
 
     # other possible fields 
     # still_available = models.BooleanField()                                 

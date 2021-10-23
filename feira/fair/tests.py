@@ -40,6 +40,9 @@ class ListingPerObjectPermissionTestCase(TestCase):
             owner=self.auth_user
             )
 
+
+        # initialize permissions
+        AuthTools.initialize(sender=None)
                                         
 
 
@@ -78,15 +81,28 @@ class ListingPerObjectPermissionTestCase(TestCase):
 
     def test_group_change_listing_permissions(self):
 
-        # can manager group change ANY listing
-        managers = Group.objects.get(AuthTools.MANAGER)
+        ## can manager group change ANY listing?
+        managers = Group.objects.get(name=AuthTools.MANAGER)
         self.assertTrue(AuthTools.group_has_permission(managers,
                                                        AuthTools.CHANGE_LISTING,
                                                        self.listing))
-        # will an unauthorized end user has a group permission on the listing
+
+        ## will an unauthorized user has a group permission if the user joins an authorized group?
+        # add the user to the manager group
+        self.forb_user.groups.add(managers)
+        self.assertTrue(AuthTools.user_has_group_permission(self.forb_user,
+                                                            AuthTools.CHANGE_LISTING,
+                                                            self.listing))
+        # will the user loose the permission when removed from the group
+        self.forb_user.groups.remove(managers)
+        self.assertFalse(AuthTools.user_has_group_permission(self.forb_user,
+                                                            AuthTools.CHANGE_LISTING,
+                                                            self.listing))
 
 
-        
+
+
+
 
 
         

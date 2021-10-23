@@ -6,6 +6,6 @@ class FairConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'fair'
 
-    def ready(self):
-        # after migration where we have created the groups assing permissions
-        post_migrate.connect(AuthTools.initialize, sender=self)
+    # def ready(self):
+    #     # after migration and group creation, assign permissions
+    #     post_migrate.connect(AuthTools.initialize, sender=self)

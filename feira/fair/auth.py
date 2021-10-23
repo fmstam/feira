@@ -39,8 +39,8 @@ class AuthTools():
     }
     
     @staticmethod
-    def initialize(cls, sender, **kwargs):
-        cls.assign_permissions(cls.group_permissions)
+    def initialize(sender, **kwargs):
+        AuthTools.assign_permissions(AuthTools.group_permissions)
 
    
     @staticmethod
@@ -54,7 +54,6 @@ class AuthTools():
         from django.contrib.auth import models as auth_models
 
         for group_name, permissions in group_permissions_dict.items():
-            print(group_name)
             group = auth_models.Group.objects.get(name=group_name)
             for permission in permissions:
                 assign_perm(permission, group)
@@ -66,9 +65,8 @@ class AuthTools():
         """
         Check if ``group`` has ``permissions`` on ``object``
         """
-        from django.contrib.auth import get_objects_for_group
+        from guardian.shortcuts import get_objects_for_group
 
-        
         return get_objects_for_group(group=group, 
                     perms=permissions).filter(id=object.id).exists()
 

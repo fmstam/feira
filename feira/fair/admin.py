@@ -18,3 +18,8 @@ class SimilarityAdmin(admin.ModelAdmin):
 admin.site.register(ActivityLog)
 class ActivityLogAdmin(admin.ModelAdmin):
     list_display = ['action', 'by', 'at']
+
+admin.site.register(DeletedData)   
+class DeletedDataAdmin(admin.ModelAdmin):
+    list_display = ['model_name', 'instance_id', 'data']
+    

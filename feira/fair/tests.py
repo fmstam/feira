@@ -5,7 +5,7 @@ from rest_framework import status
 
 
 
-from fair.models import Category, Listing
+from fair.models import Category, DeletedData, Listing
 from datetime import date, datetime
 from django.contrib.auth.models import Group, User
 
@@ -14,31 +14,78 @@ from fair.auth import AuthTools
 
 # Create your tests here.
 
+### shortcuts
+def create_listing(title, user):
+    return Listing.objects.create( title=title,
+                                   creation_date=datetime.now(),
+                                   category=Category.objects.last(),
+                                   modification_date=datetime.now(),
+                                   price=20,
+                                   owner=user
+                                )
+    
+def create_user(username, email, password):
+    user = User.objects.create(username=username, 
+                                email=email)
+    user.set_password(password)
+    user.save()
+
+    return user
+
+
+
+### Tests
+
+## Delete and Restore functionalities
+class DeleteRestoreListing(TestCase):
+
+    def setUp(self):
+        self.user = create_user(username='test user', email='test@localhost', password='12345')
+        self.listing = create_listing(title='new listing', user=self.user)
+    
+    def test_delete_restore(self):
+        
+        # make sure we have a listing
+        self.assertEqual(Listing.objects.count(), 1)
+        self.assertEqual(DeletedData.objects.count(), 0)
+
+        # delete it
+        id = self.listing.id
+        self.listing.delete()
+        
+        # check it is deleted
+        self.assertEqual(Listing.objects.count(), 0)
+        self.assertEqual(DeletedData.objects.count(), 1)
+
+        # restore it
+        DeletedData.restore_deleted(instance_id=id)
+
+        # make sure we have the listing back
+        self.assertEqual(Listing.objects.count(), 1)
+        self.assertEqual(DeletedData.objects.count(), 0)
+  
+
+
+
+
+
 
 ## Permission tests
 class ListingPerObjectPermissionTestCase(TestCase):
-    @classmethod
+
     def setUp(self):
         
-        self.auth_user = User.objects.create(username='auth_user', 
-                                            email='auth_user@localhost')
-        self.auth_user.set_password('12345')
-        self.auth_user.save()
+        self.auth_user =  create_user(username='auth_user', 
+                                     email='auth_user@localhost',
+                                     password='12345')
 
-        self.forb_user = User.objects.create(username='forb_user', 
-                                            email='forb_user@localhost')
-        self.forb_user.set_password('12345')
-        self.forb_user.save()
+        self.forb_user = create_user(username='forb_user', 
+                                     email='forb_user@localhost',
+                                     password='12345')
 
 
-        self.listing = Listing.objects.create(
-            title='test_listing',
-            creation_date=datetime.now(),
-            category=Category.objects.last(),
-            modification_date=datetime.now(),
-            price=20,
-            owner=self.auth_user
-            )
+
+        self.listing = create_listing(title='new listing', user=self.auth_user)
 
 
         # initialize permissions

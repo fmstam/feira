@@ -131,3 +131,6 @@ dmypy.json
 
 # deep learning archs
 *.pth
+
+# do not upload anything inside media folder
+media/

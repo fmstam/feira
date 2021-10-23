@@ -3,6 +3,7 @@ from typing import List
 from django.db import models
 from django.db.models.deletion import CASCADE
 from django.utils import timezone
+from django.core import serializers
 
 # urls
 from django.urls import reverse
@@ -99,6 +100,25 @@ class ActivityLog(models.Model):
                             on_delete=models.SET_NULL) # let it there if the user gets deleted
     action = models.CharField(max_length=256)
     at = models.DateTimeField()
+
+class DeletedData(models.Model):
+    model_name  = models.CharField(max_length=200) #
+    instance_id = models.IntegerField()
+    data        = models.TextField()
+
+    
+    @classmethod
+    def restore_deleted(cls, instance_id):
+        """
+        Restore a deleted object.
+        To see how an object is handeled see post_delete receivers in signal.py
+        """
+        deleted =  cls.objects.get(model_name = 'Listing', instance_id=instance_id)
+        for instance in serializers.deserialize('json', deleted.data):
+            instance.save()
+            deleted.delete()
+
+    
 
 
 ## ML-related models/tables

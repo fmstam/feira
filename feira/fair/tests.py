@@ -9,6 +9,8 @@ from fair.models import Category, Listing
 from datetime import date, datetime
 from django.contrib.auth.models import Group, User
 
+from fair.auth import AuthTools
+
 
 # Create your tests here.
 
@@ -28,6 +30,16 @@ class ListingPerObjectPermissionTestCase(TestCase):
         self.forb_user.set_password('12345')
         self.forb_user.save()
 
+
+        self.listing = Listing.objects.create(
+            title='test_listing',
+            creation_date=datetime.now(),
+            category=Category.objects.last(),
+            modification_date=datetime.now(),
+            price=20,
+            owner=self.auth_user
+            )
+
                                         
 
 
@@ -35,29 +47,18 @@ class ListingPerObjectPermissionTestCase(TestCase):
         """
         Test if an ordinary user that owns the listing can modify it while 
         other ordinary users can not.
-        """
-        from fair.auth import AuthenticationManager
-        listing = Listing.objects.create(
-            title='test_listing',
-            creation_date=datetime.now(),
-            category=Category.objects.last(),
-            modification_date=datetime.now(),
-            price=20,
-            owner=self.auth_user
-        )
-
-        AuthenticationManager.initialize(sender=self)
+        """   
 
         self.assertTrue(
-            self.auth_user.has_perm(AuthenticationManager.CHANGE_LISTING, listing)
+            self.auth_user.has_perm(AuthTools.CHANGE_LISTING, self.listing)
         )
 
         self.assertFalse(
-            self.forb_user.has_perm(AuthenticationManager.CHANGE_LISTING, listing)
+            self.forb_user.has_perm(AuthTools.CHANGE_LISTING, self.listing)
         )
 
         # check url authorization
-        url =  f'/fair/listings/{listing.id}/edit'
+        url =  f'/fair/listings/{self.listing.id}/edit'
         
         # authorized user
         login = self.client.login(username='auth_user', password='12345')
@@ -79,8 +80,10 @@ class ListingPerObjectPermissionTestCase(TestCase):
 
         # can manager group change ANY listing
         managers = Group.objects.get(name='manager')
-        self.assertEqual
-
+        self.assertTrue(AuthTools.group_has_permission(managers,
+                                                                  AuthTools.CHANGE_LISTING,
+                                                                  self.listing))
+        
 
 
         

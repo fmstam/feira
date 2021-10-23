@@ -2,29 +2,28 @@
     Permissions and Authentication helpers
 """
 
-
-from datetime import timedelta, timezone
-
-
-class AuthenticationManager():
+class AuthTools():
     """
     A helper class to manage the permissions and tokens
     """
 
-    # premissions
+    ###### groups
+    MANAGER = "manager"
+    USER    = "user"
 
+    ###### Premissions
     # listings
-    VIEW_LISTING = "fair.view_listing"
+    VIEW_LISTING   = "fair.view_listing"
     CHANGE_LISTING = "fair.change_listing"
     DELETE_LISTING = "fair.change_listing"
 
     # logs
-    VIEW_ACTIVITY_LOG = "api.view_activity_log"
+    VIEW_ACTIVITY_LOG   = "api.view_activity_log"
     CHANGE_ACTIVITY_LOG = "api.change_activity_log"
 
     # ML 
-    REBASE_ML = "api.rebase_ml"
-    CHANGE_CATEGORIES = "api.change_categories"
+    REBASE_ML             = "api.rebase_ml"
+    CHANGE_CATEGORIES     = "api.change_categories"
     CREATE_DUMMY_LISTINGS = "api.create_dummy_lists"
 
     
@@ -42,10 +41,10 @@ class AuthenticationManager():
     @staticmethod
     def initialize(cls, sender, **kwargs):
         cls.assign_permissions(cls.group_permissions)
+
    
     @staticmethod
-    def assign_permissions(cls, 
-                         group_permissions_dict): 
+    def assign_permissions (group_permissions_dict): 
         """
         Assing permissions to a group.
 
@@ -65,7 +64,7 @@ class AuthenticationManager():
     @staticmethod
     def group_has_permission(group, permissions, object):
         """
-        Check if ``user`` has ``permissions`` on ``object``
+        Check if ``group`` has ``permissions`` on ``object``
         """
         from django.contrib.auth import get_objects_for_group
 
@@ -73,8 +72,14 @@ class AuthenticationManager():
         return get_objects_for_group(group=group, 
                     perms=permissions).filter(id=object.id).exists()
 
-    
-     
+    @staticmethod
+    def user_has_group_permission(user, permissions, object):
+        """
+        Check if ``user`` belongs to a group that has ``permissions`` on ``object``
+        """
 
-
-
+        for group in user.groups.all():
+            if AuthTools.group_has_permission(group, permissions, object):
+                return True
+        
+        return False

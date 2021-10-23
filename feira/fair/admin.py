@@ -13,3 +13,8 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(Similarity)
 class SimilarityAdmin(admin.ModelAdmin):
     list_display = ['score', 'listing_1', 'listing_2']
+
+
+admin.site.register(ActivityLog)
+class ActivityLogAdmin(admin.ModelAdmin):
+    list_display = ['action', 'by', 'at']

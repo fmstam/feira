@@ -1,4 +1,5 @@
 # models
+from typing import List
 from django.db import models
 from django.db.models.deletion import CASCADE
 from django.utils import timezone
@@ -6,16 +7,8 @@ from django.utils import timezone
 # urls
 from django.urls import reverse
 
-
-
 # auth imports
 from django.contrib.auth.models import User
-
-## set permissions imports
-from .auth import AuthTools # our manager
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-from guardian.shortcuts import assign_perm
 
 
 
@@ -98,13 +91,16 @@ class Listing(models.Model):
         return reverse('fair:category_listings', args=[self.slug])
     
 
-# set permission post-saving
-@receiver(post_save, sender=Listing)
-def set_listing_premissions(sender, instance, **kwargs):
-    user = User.objects.get(id=instance.owner.id)
-    assign_perm(AuthTools.CHANGE_LISTING, user) # on the model
-    assign_perm(AuthTools.CHANGE_LISTING, user, instance) # on the instance
-    
+## Activity log models
+
+class ActivityLog(models.Model):
+    by = models.ForeignKey(User, 
+                            null=True,
+                            on_delete=models.SET_NULL) # let it there if the user gets deleted
+    action = models.CharField(max_length=256)
+    at = models.DateTimeField()
+
+
 ## ML-related models/tables
 class Similarity(models.Model):
     """

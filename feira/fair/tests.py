@@ -79,10 +79,13 @@ class ListingPerObjectPermissionTestCase(TestCase):
     def test_group_change_listing_permissions(self):
 
         # can manager group change ANY listing
-        managers = Group.objects.get(name='manager')
+        managers = Group.objects.get(AuthTools.MANAGER)
         self.assertTrue(AuthTools.group_has_permission(managers,
-                                                                  AuthTools.CHANGE_LISTING,
-                                                                  self.listing))
+                                                       AuthTools.CHANGE_LISTING,
+                                                       self.listing))
+        # will an unauthorized end user has a group permission on the listing
+
+
         
 
 

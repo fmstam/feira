@@ -39,33 +39,11 @@ class AuthenticationManager():
                                 DELETE_LISTING],
     }
     
-    @classmethod
+    @staticmethod
     def initialize(cls, sender, **kwargs):
         cls.assign_permissions(cls.group_permissions)
-
-    @classmethod
-    def create_access_token(cls, user):
-        import oauth2_provider.models
-        Application = oauth2_provider.models.get_application_model()
-        AccessToken = oauth2_provider.models.get_access_token_model()
-        token_expiration_time = timezone.now() + timedelta(minutes=60)
-        token = AccessToken.objects.create(
-            user=user,
-            scope='read write packages',
-            token='test{}{}'.format(
-                user.id,
-                int(token_expiration_time.timestamp()),
-            ),
-            application=Application.objects.first(),
-            expires=token_expiration_time,
-        )
-        return token
-
-    @classmethod
-    def auth_header(cls, token):
-        return { 'HTTP_AUTHORIZATION': 'Bearer {}'.format(token) }        
-    
-    @classmethod
+   
+    @staticmethod
     def assign_permissions(cls, 
                          group_permissions_dict): 
         """
@@ -84,18 +62,19 @@ class AuthenticationManager():
 
 
 
-    @classmethod
-    def has_permission(user, permissions, object):
+    @staticmethod
+    def group_has_permission(group, permissions, object):
         """
         Check if ``user`` has ``permissions`` on ``object``
         """
         from django.contrib.auth import get_objects_for_group
-        for group in user.group.all():
-            if get_objects_for_group(group=group, 
-                    perms=permissions).filter(id=object.id).exists():
-                return True
 
-        return  False
+        
+        return get_objects_for_group(group=group, 
+                    perms=permissions).filter(id=object.id).exists()
+
+    
+     
 
 
 

@@ -66,10 +66,6 @@ class DeleteRestoreListing(TestCase):
   
 
 
-
-
-
-
 ## Permission tests
 class ListingPerObjectPermissionTestCase(TestCase):
 

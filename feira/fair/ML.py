@@ -23,7 +23,7 @@ from django.urls.base import reverse
 
 class SimilarityScorer():
     """
-    Calculate the similarities between listing and store them in a table.
+    Calculate the similarities between listings and store the similarity scores in a table.
     """
     def __init__(self,
                 metric=metrics.pairwise.cosine_similarity,
@@ -59,43 +59,43 @@ class SimilarityScorer():
         
     def calc_all_similarities(self, request):
         """
-        Calculate the similarities of all listings and store them in the similarly table (see models.py).
+        Calculate the similarities between all listings and store the scores in the similarly table (see models.py).
         It will replace the existing scores in the similarity table.
 
-        This way, we do not need to re-calc the feature each time the user views a listing
+        This way, we do not need to re-calc the features each time the user views a listing.
         A simple django query will return the related listings for the current item.
         """
 
-        # An efficient way would be to return a list of id and image 
-        # and create feed mini-batches to extract features and calculate score.
-        # however, for a large dataset this would require a larage memory
+        # An efficient way would be to return a list of id and image tuples,
+        # and create mini-batches to extract features and calculate scores.
+        # However, for a large dataset this would require a larage memory.
         # A memory friendly, yet a bit slower, is to iterate and calculate
-        # the similarity between each two listings
-        # the similarity matrix/table is symmetric therefore we need to calculate
+        # the similarity between each two listings.
+        # The similarity matrix/table is symmetric therefore we need to calculate
         # it for lower (or upper) traingel of the matrix
 
         # clear the similarity table
         Similarity.objects.all().delete()
         
         # order them by pk
-        listings = Listing.objects.order_by('pk') 
+        # listings = Listing.objects.order_by('pk') 
 
         # this loop runs for sum(n-1), where n is the number of listings in the database
         for listing_1, listing_2 in tqdm(itertools.combinations(listings, 2)): # unrepeated combinations
             # get score
             score = self.calc_similarities(listing_1, listing_2)
             # store it
-            similarity = Similarity(score=score, 
-                                    listing_1=listing_1,
-                                    listing_2=listing_2)
-            similarity.save()
+            Similarity(score=score, 
+                      listing_1=listing_1,
+                      listing_2=listing_2).save()
+           
 
 
         return HttpResponseRedirect(reverse('home'))
 
     def calc_similarities(self, listing_1, listing_2 ):
         """ 
-        Calculate the similarity between a two listings
+        Calculate the similarity between two listings
         """
 
         # nested func to calc the features

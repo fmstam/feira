@@ -40,6 +40,8 @@ class SimilarityScorer():
             # efficientnet https://ai.googleblog.com/2019/05/efficientnet-improving-accuracy-and.html
             # B5 acheives quite good with a smaller number of weights compared to others
             # net = models.efficientnet_b5(pretrained=True) 
+            
+            # OR resnet, which works fine too
             self.net = models.resnet50(pretrained=True) 
             self.net.eval()
             # self.return_nodes = {"layer4.2.relu_2": "layer4"}
@@ -89,8 +91,6 @@ class SimilarityScorer():
                       listing_1=listing_1,
                       listing_2=listing_2).save()
            
-
-
         return HttpResponseRedirect(reverse('home'))
 
     def calc_similarities(self, listing_1, listing_2 ):

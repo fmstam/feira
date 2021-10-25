@@ -13,6 +13,7 @@ import shutil
 # django and project stuff
 from django.http import HttpResponseRedirect
 from django.urls.base import reverse
+from django.conf import settings
 
 from .models import Listing, Category   
 
@@ -30,18 +31,23 @@ def load_configurations(file='configurations.json', block="description"):
     return configurations
 
 ### Dummy listings related helpers
-# setup 
-data_path =  "/home/ftam/Downloads/clothing-dataset-small-master/dataset"
-data_folders = {'Dress': 'dress', 'Shirt': 'shirt', 'toptee':'toptee'} # categories in the listing
-n_listings =  100
-prices =  range(5, 120, 5)
-unique =  True
-extensions =  ['*.jpeg', '*.jpg', '*.png']
 
-def create_listings(request):
+
+def create_listings(request, configurations_block="dummy_listings"):
     """
     Create dummy listings.
     """
+
+    # setup 
+    configurations = load_configurations(block=configurations_block)
+    data_path =  configurations['data_path']
+    data_folders = configurations['data_folders']
+    n_listings =  configurations['n_listings']
+    start, end, step = configurations['prices']
+    prices =  range(start, end, step)
+    unique =  configurations['unique']
+    extensions =  configurations['extensions'] #['*.jpeg', '*.jpg', '*.png']
+
     for cate, folder in data_folders.items():
         files = []
         for extension in extensions:
@@ -67,7 +73,7 @@ def create_listings(request):
             listing.save()
 
              # copy the file to MEDIA_ROOT/listing_images
-            listing_images_path = '/home/ftam/Dropbox/webdev/django/feira/feira/media/'
+            listing_images_path = settings.MEDIA_ROOT
             shutil.copyfile(file, f'{listing_images_path}{os.sep}{image_file_name}')
 
     return HttpResponseRedirect(reverse('home'))

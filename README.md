@@ -1,4 +1,5 @@
 # Feira
+
 A Marketplace powered by machine learning backend services.
 
 Main requirements:
@@ -18,7 +19,6 @@ See requirements for a full **conda** environnement setup.
   <br><b> Figure 2 </b>
 </p>
 
-
 ## Current apps:
 Feira currently supports two main applications:
  - **fair**: a app where the user can list their items for selling. 
@@ -31,14 +31,4 @@ Feira currently supports two main applications:
 
  Looking at the current system, we can see the recommendation backend is actually working nice. Here are some examples:
 
-
-
-
-
-  
-
-
-
-    
-
-
+   >> Note: more apps will be added to the project with more machine learning support.

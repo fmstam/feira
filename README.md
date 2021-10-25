@@ -1,9 +1,8 @@
 # Feira
-A commercial website similar to typical marketplace services powered by machine learning.
+A Marketplace powered by machine learning backend services.
 
-
-Pre-requisites:
-- Python
+Main requirements:
+- Python 
 - Pytorch
 - Django
 - SQlite
@@ -11,15 +10,35 @@ Pre-requisites:
 - HTML 5
 - Bootstrap 5
 
+See requirements for a full **conda** environnement setup.
+
+
+<p align="center">
+  <img src="images/main.png">
+  <br><b> Figure 2 </b>
+</p>
+
 
 ## Current apps:
- - **fair**: a simple auction app where the user can upload an image of the object/objects and the system is able to detect objects and assign them to the correct categories using a deep learning model. The current version uses the typical uses YOLO V5 to detect objects.
+Feira currently supports two main applications:
+ - **fair**: a app where the user can list their items for selling. 
+ - **accounts**: a typical django app for account management
 
-- **accounts**: a typical django app for account management
+### Fair:
+ Fair is the core fo the marketplace. It is allows the users to post their items and navigate other users'. 
+ 
+ In the current version, no actual buying functionalities are added but they are in the backlog and will be added in the in the next sprints. The focus was on establishing some different functionalities like ML support, encryption, security. More features and analysis will be added like throttling a flood of request, advanced encryptions, optimization, and more tests especially in the frontend.
+
+ Looking at the current system, we can see the recommendation backend is actually working nice. Here are some examples:
+
+
+
+
+
   
 
 
 
-    >> Note: more apps will be added to the project with more machine learning support.
+    
 
 

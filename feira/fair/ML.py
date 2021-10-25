@@ -4,6 +4,7 @@
 # typical imports
 import itertools
 import os
+from django.contrib.auth.mixins import LoginRequiredMixin
 from tqdm import tqdm
 
 # sklearn
@@ -18,12 +19,15 @@ from .models import Listing, Similarity
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls.base import reverse
+from django.db.models import Q
 
 
 
-class SimilarityScorer():
+
+class SimilarityScorer(LoginRequiredMixin):
     """
     Calculate the similarities between listings and store the similarity scores in a table.
+    NOTE: This class requires a two-factor auth which will be added int he next sprint.
     """
     def __init__(self,
                 metric=metrics.pairwise.cosine_similarity,
@@ -57,8 +61,9 @@ class SimilarityScorer():
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),])
         else:
             self.preprocessor = preprocessor
-        
-    def calc_all_similarities(self, request):
+
+    
+    def add_all_similarities(self, request):
         """
         Calculate the similarities between all listings and store the scores in the similarly table (see models.py).
         It will replace the existing scores in the similarity table.
@@ -79,7 +84,7 @@ class SimilarityScorer():
         Similarity.objects.all().delete()
         
         # order them by pk
-        # listings = Listing.objects.order_by('pk') 
+        listings = Listing.objects.order_by('pk') 
 
         # this loop runs for sum(n-1), where n is the number of listings in the database
         for listing_1, listing_2 in tqdm(itertools.combinations(listings, 2)): # unrepeated combinations
@@ -91,6 +96,40 @@ class SimilarityScorer():
                       listing_2=listing_2).save()
            
         return HttpResponseRedirect(reverse('home'))
+
+    def update_all_similarities(self, request):
+        
+        """
+        The same as add_all_similarities but calculate scores of newly added listings and add them to the 
+        Similarity table.
+        """
+
+        new_listings = Listing.objects.filter(Q(related_listing_1=None) & Q(related_listing_2=None))
+        exist_listings = Listing.objects.exclude(Q(related_listing_1=None) & Q(related_listing_2=None))
+        
+        # new vs existing
+        for listing_1 in new_listings:
+            for listing_2 in tqdm(exist_listings):
+                # get score
+                score = self.calc_similarities(listing_1, listing_2)
+                # store it
+                Similarity(score=score, 
+                        listing_1=listing_1,
+                        listing_2=listing_2).save()
+
+        # new vs new
+        for listing_1, listing_2 in tqdm(itertools.combinations(new_listings, 2)): # unrepeated combinations
+            # get score
+            score = self.calc_similarities(listing_1, listing_2)
+            # store it
+            Similarity(score=score, 
+                      listing_1=listing_1,
+                      listing_2=listing_2).save()
+
+        return HttpResponseRedirect(reverse('home'))
+
+
+
 
     def calc_similarities(self, listing_1, listing_2 ):
         """ 

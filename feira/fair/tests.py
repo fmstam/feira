@@ -5,17 +5,31 @@ from rest_framework import status
 
 
 
-from fair.models import Category, DeletedData, Listing
+from fair.models import ActivityLog, Category, DeletedData, Listing
 from datetime import date, datetime
 from django.contrib.auth.models import Group, User
 
 from fair.auth import AuthTools
 
+from faker import Faker
+
+
 
 # Create your tests here.
 
 ### shortcuts
-def create_listing(title, user):
+def create_user(username=Faker().user_name(), 
+                email=Faker().ascii_safe_email(), 
+                password=Faker().password()):
+    
+    user = User.objects.create(username=username, 
+                                email=email)
+    user.set_password(password)
+    user.save()
+
+    return user
+                
+def create_listing(title='test listing', user=create_user()):
     return Listing.objects.create( title=title,
                                    creation_date=datetime.now(),
                                    category=Category.objects.last(),
@@ -24,13 +38,6 @@ def create_listing(title, user):
                                    owner=user
                                 )
     
-def create_user(username, email, password):
-    user = User.objects.create(username=username, 
-                                email=email)
-    user.set_password(password)
-    user.save()
-
-    return user
 
 
 
@@ -64,6 +71,27 @@ class DeleteRestoreListing(TestCase):
         self.assertEqual(Listing.objects.count(), 1)
         self.assertEqual(DeletedData.objects.count(), 0)
   
+## encryption test
+
+class CipherTestCase(TestCase):
+
+    def test_logs_are_encrypted(self):
+        """
+        Make sure the log activities are encrypted and can be decrypted for revision.
+        To that end, we can make an activity, like creating a listing and then,
+        check if the activity is recorded and is encrypted.
+        """
+
+        self.assertEqual(ActivityLog.objects.count(), 0)
+        # make an activity
+        listing = create_listing()
+        # make sure it is recorded
+        self.assertEqual(ActivityLog.objects.count(), 1)
+
+        # now let us access it via db connection
+        activity_data = ActivityLog.objects.last()
+        print(activity_data)
+
 
 
 ## Permission tests

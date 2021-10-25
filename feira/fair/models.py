@@ -11,6 +11,8 @@ from django.urls import reverse
 # auth imports
 from django.contrib.auth.models import User
 
+from fair.encryptions import EncryptedTextField
+
 
 
 class Category(models.Model):
@@ -98,7 +100,7 @@ class ActivityLog(models.Model):
     by = models.ForeignKey(User, 
                             null=True,
                             on_delete=models.SET_NULL) # let it there if the user gets deleted
-    action = models.CharField(max_length=256)
+    action = EncryptedTextField()
     at = models.DateTimeField()
 
 class DeletedData(models.Model):

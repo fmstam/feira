@@ -103,6 +103,10 @@ class ActivityLog(models.Model):
     action = EncryptedTextField(max_length=256)
     at = models.DateTimeField()
 
+    class Meta:
+        ordering = ['-at']
+        verbose_name_plural = 'Activities'
+
 
 class DeletedData(models.Model):
     model_name  = models.CharField(max_length=200) #
@@ -119,6 +123,9 @@ class DeletedData(models.Model):
         for instance in serializers.deserialize('json', deleted.data):
             instance.save()
             deleted.delete()
+
+    class Meta:
+        verbose_name_plural = 'DeletedData'
 
     
 

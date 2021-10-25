@@ -1,3 +1,4 @@
+from django.db import connection
 from django.http import response
 from django.test import TestCase
 from django.test.client import Client
@@ -29,7 +30,7 @@ def create_user(username=Faker().user_name(),
 
     return user
                 
-def create_listing(title='test listing', user=create_user()):
+def create_listing(user, title='test listing'):
     return Listing.objects.create( title=title,
                                    creation_date=datetime.now(),
                                    category=Category.objects.last(),
@@ -84,13 +85,20 @@ class CipherTestCase(TestCase):
 
         self.assertEqual(ActivityLog.objects.count(), 0)
         # make an activity
-        listing = create_listing()
+        user = create_user()
+        listing = create_listing(user=user)
         # make sure it is recorded
         self.assertEqual(ActivityLog.objects.count(), 1)
 
-        # now let us access it via db connection
-        activity_data = ActivityLog.objects.last()
-        print(activity_data)
+        # let us look at the table entry via a cursor
+        action = ActivityLog.objects.last().action
+        with connection.cursor() as db_cursor:
+            db_cursor.execute(' SELECT action from fair_activitylog')
+            encrypted = db_cursor.fetchone()[0]
+            print(encrypted)
+            self.assertNotEqual(encrypted, action)
+
+
 
 
 

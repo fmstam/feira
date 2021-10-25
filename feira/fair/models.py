@@ -100,15 +100,15 @@ class ActivityLog(models.Model):
     by = models.ForeignKey(User, 
                             null=True,
                             on_delete=models.SET_NULL) # let it there if the user gets deleted
-    action = EncryptedTextField()
+    action = EncryptedTextField(max_length=256)
     at = models.DateTimeField()
+
 
 class DeletedData(models.Model):
     model_name  = models.CharField(max_length=200) #
     instance_id = models.IntegerField()
     data        = models.TextField()
 
-    
     @classmethod
     def restore_deleted(cls, instance_id):
         """

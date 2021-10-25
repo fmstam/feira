@@ -1,7 +1,0 @@
-Python 3.9.7
-Django 3.2.8
-Pytorch 1.10.0
-Torchvision 0.11.0
-djangorestframework=3.12.4
-django-crispy-forms 1.13.0
-sorl-thumbnail 12.7.0

@@ -11,6 +11,8 @@ from django.urls import reverse
 # auth imports
 from django.contrib.auth.models import User
 
+from fair.encryptions import EncryptedTextField
+
 
 
 class Category(models.Model):
@@ -98,15 +100,19 @@ class ActivityLog(models.Model):
     by = models.ForeignKey(User, 
                             null=True,
                             on_delete=models.SET_NULL) # let it there if the user gets deleted
-    action = models.CharField(max_length=256)
+    action = EncryptedTextField(max_length=256)
     at = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-at']
+        verbose_name_plural = 'Activities'
+
 
 class DeletedData(models.Model):
     model_name  = models.CharField(max_length=200) #
     instance_id = models.IntegerField()
     data        = models.TextField()
 
-    
     @classmethod
     def restore_deleted(cls, instance_id):
         """
@@ -118,6 +124,9 @@ class DeletedData(models.Model):
             instance.save()
             deleted.delete()
 
+    class Meta:
+        verbose_name_plural = 'DeletedData'
+
     
 
 
@@ -128,8 +137,8 @@ class Similarity(models.Model):
     - listing_1: first listing
     - listing_1: second listing
 
-    NOTE: A better way would be a sparse datastructure which I will do in the second sprint.
-    For now allowing the fields to be blank will make things fine
+    NOTE: A better way would be a sparse data structure which I will do in the second sprint.
+    For now allowing the fields to be blank will make things ok.
     """
     score = models.FloatField(blank=True, null=True)
     listing_1 = models.ForeignKey(Listing, on_delete=CASCADE, related_name='related_listing_1')

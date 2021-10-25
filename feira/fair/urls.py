@@ -7,9 +7,14 @@ from .ML import SimilarityScorer
 
 app_name ='fair'
 urlpatterns =[
-    path('', ListingView.as_view(), name='listings'),
+    
+    # these are to populate the system
     path('random_listings/', create_listings ),
-    path('calc_score/', SimilarityScorer().calc_all_similarities ),
+    path('calc_scores/', SimilarityScorer().add_all_similarities ),
+    path('update_scores/', SimilarityScorer().update_all_similarities ),
+
+    # listing urls
+    path('', ListingView.as_view(), name='listings'),
     path('listings/', ListingView.as_view(), name='listings'),
     path('listings/user/<int:owner_id>', ListingView.as_view(), name='user_listings'),
     path('listings/cat/<slug:category_slug>', ListingView.as_view(), name='category_listings'),

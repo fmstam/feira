@@ -1,3 +1,5 @@
+""" signals handlers """
+
 ## permissions imports
 from typing import List
 from django.core import serializers
@@ -13,7 +15,7 @@ from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
 
-## Signals on Listing model
+## 1. Signals on Listing model
 
 # Set permission post-saving
 @receiver(post_save, sender=Listing)
@@ -39,6 +41,7 @@ def post_save_listing_activity(sender,
     ActivityLog.objects.create(by=user, 
                                 action=action,
                                 at=timezone.now())
+
     
 ### archive listing 
 @receiver(post_delete, sender=Listing)
@@ -50,4 +53,6 @@ def archive_Listing(sender, instance, **kwargs):
         data=data
 
     )
-# On other models
+
+
+# 2. Signals on X model ...

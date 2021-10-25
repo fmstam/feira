@@ -14,8 +14,6 @@ from django.utils.translation import override
 
 class Cipher():
 
-    
-
     def __init__(self, cipher_key=None):
         
         if not cipher_key:
@@ -37,10 +35,10 @@ class Cipher():
         
         return str(Fernet(self.cipher_key).decrypt(data), encoding='utf8')
 
-cipher = Cipher()
+
 
 class EncryptedTextField(TextField):
-
+    cipher = Cipher()
     """ An simple encrypted TextField.
     This is not strong since we should make this class able to define different keys and/or algorithm.
     NOT only using a single key and algorithm which will expose all encrypted fields/models easily.
@@ -50,15 +48,10 @@ class EncryptedTextField(TextField):
     """
     
     def from_db_value(self, value, experssion, connection):
-        return cipher.decrypt(value)
+        return self.cipher.decrypt(value)
 
     def to_python(self, value):
-        return cipher.decrypt(value)
+        return self.cipher.decrypt(value)
 
     def get_prep_value(self, value):
-        return cipher.encrypt(value)
-
-
-
-
-
+        return self.cipher.encrypt(value)

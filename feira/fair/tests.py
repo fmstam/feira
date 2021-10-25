@@ -21,7 +21,13 @@ import re as re
 
 
 
-# Create your tests here.
+### List of tests
+# 1- basic tests of add and delete
+# 2- encryption tests
+# 3- CSRF tests
+# 4- permission tests
+
+
 
 ### shortcuts
 def create_user(username=Faker().user_name(), 
@@ -45,12 +51,8 @@ def create_listing(user, title='test listing'):
                                 )
     
 
-
-
 ### Tests
-
 # Listing common tests
-
 class ListingTestCase(TestCase):
     def setUp(self):
         
@@ -139,15 +141,10 @@ class ListingTestCase(TestCase):
         # does it delete and redirect to home?
         self.assertEqual(response.status_code, status.HTTP_302_FOUND) 
 
-        # object is deleted too
+        # now the object should be deleted from the model
         self.assertEqual(Listing.objects.count(), 0)
 
 
-
-
-
-
-        
 
 ## Delete and Restore functionalities
 class DeleteRestoreListing(TestCase):

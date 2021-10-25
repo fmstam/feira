@@ -32,6 +32,8 @@ class ListingView(CreateView):
     def get_listing(self, filter, single=False):
         """
         Retrives listings based on the 'filter' or 404
+        
+        :param: filter a query 
         Returns the listing dictionary to be sent to the template
         """
         if single: # when viewing a single listing
@@ -40,17 +42,18 @@ class ListingView(CreateView):
             # and get the recommendations
             # since the table sparse, we compare both fks
             ids = Similarity.objects.filter(Q(listing_1 = listing) | Q(listing_2 = listing)).values_list('listing_1', 'listing_2').order_by('-score')[:5]
-            
             # cobmine them, I am sure there is a better dj-way than classic list comperhension
             pks = set([id[0] for id in ids] + [id[1] for id in ids])
             pks.remove(listing.id) # do not recommend the same listing
-
             recommendations = Listing.objects.filter(pk__in=pks).all()
+
+            # prepare them for the template 
             listing_dict = {'listing': listing, 
                             'recommendations': recommendations
                             }
             template_name='fair/listing.html'
-        else:
+
+        else: 
             if not filter: # all objects no filter
                 listings =  Listing.objects.all()
             else: # muti-listing filter
@@ -106,7 +109,7 @@ class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     
     def get_login_url(self) -> str:
         """
-        Make sure the user is logged in
+        Make sure the user is logged in.
         """
         return reverse('accounts:login')
 

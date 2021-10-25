@@ -128,8 +128,8 @@ class Similarity(models.Model):
     - listing_1: first listing
     - listing_1: second listing
 
-    NOTE: A better way would be a sparse datastructure which I will do in the second sprint.
-    For now allowing the fields to be blank will make things fine
+    NOTE: A better way would be a sparse data structure which I will do in the second sprint.
+    For now allowing the fields to be blank will make things ok.
     """
     score = models.FloatField(blank=True, null=True)
     listing_1 = models.ForeignKey(Listing, on_delete=CASCADE, related_name='related_listing_1')

@@ -9,7 +9,7 @@ from tqdm import tqdm
 # sklearn
 from sklearn import metrics
 
-# torch stuff
+# torch and image loader
 from PIL import Image
 from torchvision import transforms, models
 
@@ -44,8 +44,7 @@ class SimilarityScorer():
             # OR resnet, which works fine too
             self.net = models.resnet50(pretrained=True) 
             self.net.eval()
-            # self.return_nodes = {"layer4.2.relu_2": "layer4"}
-            self.return_nodes = {"fc": "fc"}
+            self.return_nodes = {"fc": "fc"} # last layer
 
         self.feature_extractor =  models.feature_extraction.create_feature_extractor(self.net, 
                                                                                     return_nodes=self.return_nodes)

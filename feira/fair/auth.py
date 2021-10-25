@@ -48,7 +48,7 @@ class AuthTools():
         """
         Assing permissions to a group.
 
-        :param group_permissions_dict: dictionary of format group:[permissions]
+        :param: group_permissions_dict: dictionary of format group:[permissions]
         """
         from guardian.shortcuts import assign_perm
         from django.contrib.auth import models as auth_models

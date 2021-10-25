@@ -9,6 +9,7 @@ from datetime import datetime
 import random
 from pathlib import Path
 import shutil
+import json
 
 # django and project stuff
 from django.http import HttpResponseRedirect
@@ -17,7 +18,7 @@ from django.conf import settings
 
 from .models import Listing, Category   
 
-import json
+
 
 
 # configuration loaders
@@ -35,7 +36,10 @@ def load_configurations(file='configurations.json', block="description"):
 
 def create_listings(request, configurations_block="dummy_listings"):
     """
-    Create dummy listings.
+    Create dummy listings by random sampling from a dataset.
+
+    :param: request is the user request
+    :configuration_block: a dictionary of configurations to create the random listings
     """
 
     # setup 

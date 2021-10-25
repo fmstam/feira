@@ -3,13 +3,18 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from .forms import ListingForm
-from .models import Listing, Similarity
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
+
+
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.db.models import Q
+
 from .auth import AuthTools
+from .forms import ListingForm
+from .models import Listing, Similarity
 
 
 
@@ -44,7 +49,8 @@ class ListingView(CreateView):
             ids = Similarity.objects.filter(Q(listing_1 = listing) | Q(listing_2 = listing)).values_list('listing_1', 'listing_2').order_by('-score')[:5]
             # cobmine them, I am sure there is a better dj-way than classic list comperhension
             pks = set([id[0] for id in ids] + [id[1] for id in ids])
-            pks.remove(listing.id) # do not recommend the same listing
+            if len(pks) > 0 :
+                pks.remove(listing.id)# do not recommend the same listing
             recommendations = Listing.objects.filter(pk__in=pks).all()
 
             # prepare them for the template 
@@ -98,6 +104,7 @@ class ListingView(CreateView):
 
 
 # create new class
+method_decorator(csrf_protect, 'dispatch')
 class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     form_class = ListingForm
     template_name = 'fair/new_listing.html'
@@ -121,6 +128,7 @@ class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
 
 
 # edit class
+method_decorator(csrf_protect, 'dispatch')
 class ListingUpdateView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, UpdateView):
     form_class = ListingForm
     model = Listing
@@ -144,9 +152,11 @@ class ListingUpdateView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         return HttpResponseRedirect(self.get_success_url())
 
 
+method_decorator(csrf_protect, 'dispatch')
 class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, DeleteView):
     model = Listing
     success_message = "Listing is deleted successfully"
+
 
     def get_success_url(self, **kwargs) -> str:
         """instead of using reverse_lazy"""

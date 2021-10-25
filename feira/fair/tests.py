@@ -1,6 +1,9 @@
+
+import django
 from django.db import connection
 from django.http import response
 from django.test import TestCase
+from django.test import client
 from django.test.client import Client
 from rest_framework import status
 
@@ -12,7 +15,9 @@ from django.contrib.auth.models import Group, User
 
 from fair.auth import AuthTools
 
+# utils
 from faker import Faker
+import re as re
 
 
 
@@ -44,6 +49,106 @@ def create_listing(user, title='test listing'):
 
 ### Tests
 
+# Listing common tests
+
+class ListingTestCase(TestCase):
+    def setUp(self):
+        
+        self.user = create_user()
+        self.listing_url = '/fair/listings'
+
+    def test_create_listing(self):
+        
+        # check it is already empty
+        self.assertEqual(Listing.objects.count(), 0)
+        listing = create_listing(user=self.user)
+        self.assertEqual(Listing.objects.count(), 1)
+
+        # check it is now available
+        url =  f'{self.listing_url}/{listing.id}'
+        response = self.client.get(url)
+
+        self.assertTrue(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_listing(self):
+
+        # check it is already empty
+        self.assertEqual(Listing.objects.count(), 0)
+        # create it
+        listing = create_listing(user=self.user)
+        # is it there?
+        self.assertEqual(Listing.objects.count(), 1)
+
+        # check it is now available
+        url =  f'{self.listing_url}/{listing.id}'
+        response = self.client.get(url)
+        # can be accessed?
+        self.assertTrue(response.status_code, status.HTTP_200_OK)
+
+        # now let us delete it
+        id =  listing.id
+        listing.delete()
+
+        # is it there anymore?
+        self.assertEqual(Listing.objects.count(), 0)
+
+        # can be accessed anymore?
+        url =  f'{self.listing_url}/{id}'
+        response = self.client.get(url)
+        self.assertTrue(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    
+
+    def test_csrf_token_on_create(self):
+        """
+        Make sure the csrf token is enforced
+        """
+
+        # create a listing
+        listing = create_listing(user=self.user)
+
+        # get the client and enforce the csrf check
+        # usually it is escped during testing
+
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
+
+        # let us try to delete it without proper csrf handeling
+        url = f'{self.listing_url}/{listing.id}/delete'
+        response = client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) 
+        # the entry still there?
+        self.assertEqual(Listing.objects.count(), 1) 
+
+
+        # Now let us to add the csrf token
+        # get the page
+        response = client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # extract the csrf token from the form
+        csrf_token = re.search(
+            'name="csrfmiddlewaretoken" value="(.*?)"',
+            str(response.content) 
+        )[1]
+
+        # try deleting it again
+        response = client.post(url,{
+            'csrfmiddlewaretoken': csrf_token
+        })
+        # does it delete and redirect to home?
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND) 
+
+        # object is deleted too
+        self.assertEqual(Listing.objects.count(), 0)
+
+
+
+
+
+
+        
+
 ## Delete and Restore functionalities
 class DeleteRestoreListing(TestCase):
 
@@ -72,8 +177,7 @@ class DeleteRestoreListing(TestCase):
         self.assertEqual(Listing.objects.count(), 1)
         self.assertEqual(DeletedData.objects.count(), 0)
   
-## encryption test
-
+## Encryption test
 class CipherTestCase(TestCase):
 
     def test_logs_are_encrypted(self):
@@ -97,9 +201,6 @@ class CipherTestCase(TestCase):
             encrypted = db_cursor.fetchone()[0]
             print(encrypted)
             self.assertNotEqual(encrypted, action)
-
-
-
 
 
 ## Permission tests

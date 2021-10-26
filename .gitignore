@@ -134,3 +134,6 @@ dmypy.json
 
 # do not upload anything inside media folder
 media/
+
+# do not uppload my local configuration paths
+configurations.json

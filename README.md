@@ -84,3 +84,15 @@ Feira currently supports two main applications:
 <p align="center">
   <img src="images/recommendations_ts.png">
 </p>
+
+
+### Other features:
+The current system has some essential features. These include:
+- **Security features**: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.
+
+- **Tests**: some essentials tests were conducted to ensure the system is working fine. These include backend tests like permission tests, CSRF tests, ....
+
+
+**Summary**: 
+
+The current version is quite simple but is working fine with all tests passed. There are more to be added and explored, especially adding more API-support to the views and focusing more on the front-end.

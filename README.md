@@ -16,19 +16,81 @@ See requirements for a full **conda** environnement setup.
 
 <p align="center">
   <img src="images/main.png">
-  <br><b> Figure 2 </b>
+  <br><b> Marketplace </b>
 </p>
 
 ## Current apps:
 Feira currently supports two main applications:
- - **fair**: a app where the user can list their items for selling. 
- - **accounts**: a typical django app for account management
+ - **Fair**: where users can list their items and view other's. 
+ - **Accounts**: a typical django app for account management
+
+> Note: more apps will be added to the project with more machine learning support in the next few sprints.
 
 ### Fair:
- Fair is the core fo the marketplace. It is allows the users to post their items and navigate other users'. 
- 
- In the current version, no actual buying functionalities are added but they are in the backlog and will be added in the in the next sprints. The focus was on establishing some different functionalities like ML support, encryption, security. More features and analysis will be added like throttling a flood of request, advanced encryptions, optimization, and more tests especially in the frontend.
+ Currently, Fair is the core of the marketplace. It allows users to post their listings. In the current version, no actual buying functionalities are added but they are in the backlog and will be added in the in the next sprints. The of focus of the last sprint was establishing various functionalities like ML support, encryption, security, and auditing. More features and analysis will be added like throttling a flood of requests, advanced encryptions, optimization, more complex ML support, and more tests especially in the frontend.
 
- Looking at the current system, we can see the recommendation backend is actually working nice. Here are some examples:
+ The summary of the some features in the next few sprints include:
+ - adding actual buying functionalities
+ - performance analysis and traffic optimization
+ - customer segmentation and advanced ML services
+ - adding more security and permission features
+ - more lightweight features, like sharing, rating, ...
+ - More API services will be added to support field updating and simple queries.
+ - Improving the GUI and add more panels
+  
 
-   >> Note: more apps will be added to the project with more machine learning support.
+ Looking at the current system, we can easily see the recommendation backend is working quite nice. Here are some examples:
+
+> Note: Many items are generated automatically to populate the system. Therefore, some prices are not realistic. But the actually system is working fine.
+
+
+> Note: The current recommendation system uses the images only. A hybrid architecture will be developed to include both image, text, and other data types for a more accurate recommendations.
+
+<p align="center">
+  <img src="images/recommendations_2.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_3.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_4.png">
+</p>
+   
+
+<p align="center">
+  <img src="images/recommendations_5.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_6.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_7.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_8.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_9.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_10.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_11.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_12.png">
+</p>
+
+<p align="center">
+  <img src="images/recommendations_ts.png">
+</p>

@@ -6,7 +6,7 @@ Main requirements:
 - Python 
 - Pytorch
 - Django
-- SQlite
+- SQLite
 - Javascript
 - HTML 5
 - Bootstrap 5

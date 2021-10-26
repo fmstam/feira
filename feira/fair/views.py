@@ -43,7 +43,6 @@ class ListingView(CreateView):
         """
         if single: # when viewing a single listing
             listing = get_object_or_404(Listing, **filter) # get the listing
-            
             # and get the recommendations
             # since the table sparse, we compare both fks
             ids = Similarity.objects.filter(Q(listing_1 = listing) | Q(listing_2 = listing)).values_list('listing_1', 'listing_2').order_by('-score')[:5]

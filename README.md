@@ -63,9 +63,6 @@ Feira currently supports two main applications:
   <img src="images/recommendations_5.png">
 </p>
 
-<p align="center">
-  <img src="images/recommendations_6.png">
-</p>
 
 <p align="center">
   <img src="images/recommendations_7.png">
@@ -76,10 +73,6 @@ Feira currently supports two main applications:
 </p>
 
 <p align="center">
-  <img src="images/recommendations_9.png">
-</p>
-
-<p align="center">
   <img src="images/recommendations_10.png">
 </p>
 
@@ -87,9 +80,6 @@ Feira currently supports two main applications:
   <img src="images/recommendations_11.png">
 </p>
 
-<p align="center">
-  <img src="images/recommendations_12.png">
-</p>
 
 <p align="center">
   <img src="images/recommendations_ts.png">

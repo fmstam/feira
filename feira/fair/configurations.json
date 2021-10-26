@@ -12,6 +12,6 @@
             "prices": [5, 120, 5],
             "unique": 1,
             "extensions":  ["*.jpeg", "*.jpg", "*.png"]
-        }
+        }  
 
 }

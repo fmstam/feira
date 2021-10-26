@@ -136,4 +136,4 @@ dmypy.json
 media/
 
 # do not uppload my local configuration paths
-configurations.json
+feira/fair/configurations.json

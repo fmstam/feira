@@ -134,6 +134,7 @@ dmypy.json
 
 # do not upload anything inside media folder
 feira/fair/media/
+feira/feira/media/
 
 # do not uppload my local configuration paths
 feira/fair/configurations.json

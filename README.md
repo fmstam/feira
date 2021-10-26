@@ -76,12 +76,16 @@ Feira currently supports two main applications:
   <img src="images/recommendations_7.png">
 </p>
 
+
+
 ### You may also like:
+In order to populate the system with data, the fashion dataset: https://github.com/XiaoxiaoGuo/fashion-iq was used to create dummy listings. This will make it reasonable to check how the system will look like. You can try different your own settings by changing the *configurations.json* file in the *fair* app.
+
 The ML backend is quite simple and fast. It uses a pre-trained ***resnet50*** network to extract features and compare them using a similarity metric.
 
-To avoid running the ML every time the user navigates an item, which is not practical nor necessary, we can run the ML on all items only once. The similarity matrix between all items is calculated and whenever the user chooses an item, the system uses a simple and clean django ORM lookup to show recommendations.
+To avoid running the ML every time the user navigates an item, which is not practical nor necessary, we can run the ML on all items only once. The similarity matrix between all items is calculated and whenever the user chooses an item, the system uses a simple and clean django ORM lookup to show recommendations. This separation makes reduces dependencies between django and ML libs and make future extensions (e.g. a more robust recommendation ML) easy to add.
 
-The similarity matrix, will be updated once new items are posted on the systems. One way to do it is to run a background service aster post-saving signal. However, that might lead to a racing-condition between and would require proper synchronization and locking. Another efficient is to update the them by an explicit command that takes care of system existing state and ensure data integrity pre-during- and post update.
+The similarity matrix, will be updated once new items are posted on the systems. One way to do it would be to run a background service after post-saving signal. However, that might lead to a racing-condition between ML and db engines and would require proper synchronization and locking. Another efficient and simple approach is to update them using an explicit command that takes care of the system existing state and ensure data integrity pre-during- and-post update.
 
 ### Security:
 The current system has some essential features. These include: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.

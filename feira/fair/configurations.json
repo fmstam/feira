@@ -6,7 +6,7 @@
     
     "dummy_listings":
         {   
-            "data_path": "/home/ftam/Downloads/clothing-dataset-small-master/dataset",
+            "data_path": "path-to-dataset",
             "data_folders":{"Dress": "dress", "Shirt": "shirt", "toptee":"toptee"},
             "n_listings": 100,
             "prices": [5, 120, 5],

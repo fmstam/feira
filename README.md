@@ -91,5 +91,5 @@ The current system has some essential features. These include: auditing, encrypt
 Some essentials tests were conducted to ensure the system is working fine. These include backend tests like permission tests, CSRF tests, ....
 
 
-**Summary**: 
+### Summary:
 The current version is quite simple but is working fine with all tests went ok. There are more to be added and explored, especially adding more API-support to the views and focusing more on the front-end. 

@@ -47,42 +47,33 @@ Feira currently supports two main applications:
 > Note: The current recommendation system uses the images only. A hybrid architecture will be developed to include both image, text, and other data types for a more accurate recommendations.
 
 <p align="center">
+  <img src="images/recommendations_1.png">
+</p>
+
+<p align="center">
   <img src="images/recommendations_2.png">
 </p>
 
 <p align="center">
   <img src="images/recommendations_3.png">
 </p>
+   
 
 <p align="center">
   <img src="images/recommendations_4.png">
 </p>
-   
+
 
 <p align="center">
   <img src="images/recommendations_5.png">
 </p>
 
+<p align="center">
+  <img src="images/recommendations_6.png">
+</p>
 
 <p align="center">
   <img src="images/recommendations_7.png">
-</p>
-
-<p align="center">
-  <img src="images/recommendations_8.png">
-</p>
-
-<p align="center">
-  <img src="images/recommendations_10.png">
-</p>
-
-<p align="center">
-  <img src="images/recommendations_11.png">
-</p>
-
-
-<p align="center">
-  <img src="images/recommendations_ts.png">
 </p>
 
 ### Recommendations:

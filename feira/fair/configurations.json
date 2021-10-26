@@ -13,5 +13,5 @@
             "unique": 1,
             "extensions":  ["*.jpeg", "*.jpg", "*.png"]
         }  
-
+    
 }

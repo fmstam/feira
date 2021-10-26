@@ -85,35 +85,18 @@ Feira currently supports two main applications:
   <img src="images/recommendations_ts.png">
 </p>
 
-### ML:
+### Recommendations:
 The ML backend is quite simple and fast. It uses a pre-trained ***resnet50*** network to extract features and compare them using a similarity metric.
 
-To avoid running the ML every time the user navigates an item. We can run the ML on all items only once. The similarity matrix between all items is calculated only once and whenever the user chooses an item, the system uses a traditional django ORM lookup to show recommendations as shown in the next 
-```
+To avoid running the ML every time the user navigates an item. We can run the ML on all items only once. The similarity matrix between all items is calculated only once and whenever the user chooses an item, the system uses a traditional django ORM lookup to show recommendations.
 
-          if single: # when viewing a single listing
-            listing = get_object_or_404(Listing, **filter) # get the listing
-            # and get the recommendations
-            # since the table sparse, we compare both fks
-            ids = Similarity.objects.filter(Q(listing_1 = listing) | Q(listing_2 = listing)).values_list('listing_1', 'listing_2').order_by('-score')[:5]
-            # combine them,
-            pks = set([id[0] for id in ids] + [id[1] for id in ids])
-            if len(pks) > 0 :
-                pks.remove(listing.id)# do not recommend the same listing
-            recommendations = Listing.objects.filter(pk__in=pks).all()
+### Security:
+The current system has some essential features. These include: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.
 
-            # prepare them for the template 
-            listing_dict = {'listing': listing, 
-                            'recommendations': recommendations
-                            }
-```
+
 ### Tests:
-The current system has some essential features. These include:
-- **Security**: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.
-
-- **Tests**: some essentials tests were conducted to ensure the system is working fine. These include backend tests like permission tests, CSRF tests, ....
+Some essentials tests were conducted to ensure the system is working fine. These include backend tests like permission tests, CSRF tests, ....
 
 
 **Summary**: 
-
-The current version is quite simple but is working fine with all tests passed. There are more to be added and explored, especially adding more API-support to the views and focusing more on the front-end.
+The current version is quite simple but is working fine with all tests went ok. There are more to be added and explored, especially adding more API-support to the views and focusing more on the front-end. 

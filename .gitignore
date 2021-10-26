@@ -133,8 +133,8 @@ dmypy.json
 *.pth
 
 # do not upload anything inside media folder
-feira/fair/media/
-feira/feira/media/
+**/cache/
+**/listings_images/
 
 # do not uppload my local configuration paths
 feira/fair/configurations.json

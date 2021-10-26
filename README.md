@@ -76,10 +76,12 @@ Feira currently supports two main applications:
   <img src="images/recommendations_7.png">
 </p>
 
-### Recommendations:
+### You may also like:
 The ML backend is quite simple and fast. It uses a pre-trained ***resnet50*** network to extract features and compare them using a similarity metric.
 
-To avoid running the ML every time the user navigates an item. We can run the ML on all items only once. The similarity matrix between all items is calculated only once and whenever the user chooses an item, the system uses a traditional django ORM lookup to show recommendations.
+To avoid running the ML every time the user navigates an item, which is not practical nor necessary, we can run the ML on all items only once. The similarity matrix between all items is calculated and whenever the user chooses an item, the system uses a simple and clean django ORM lookup to show recommendations.
+
+The similarity matrix, will be updated once new items are posted on the systems. One way to do it is to run a background service aster post-saving signal. However, that might lead to a racing-condition between and would require proper synchronization and locking. Another efficient is to update the them by an explicit command that takes care of system existing state and ensure data integrity pre-during- and post update.
 
 ### Security:
 The current system has some essential features. These include: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.

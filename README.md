@@ -85,10 +85,31 @@ Feira currently supports two main applications:
   <img src="images/recommendations_ts.png">
 </p>
 
+### ML:
+The ML backend is quite simple and fast. It uses a pre-trained ***resnet50*** network to extract features and compare them using a similarity metric.
 
-### Other features:
+To avoid running the ML every time the user navigates an item. We can run the ML on all items only once. The similarity matrix between all items is calculated only once and whenever the user chooses an item, the system uses a traditional django ORM lookup to show recommendations as shown in the next 
+```
+
+          if single: # when viewing a single listing
+            listing = get_object_or_404(Listing, **filter) # get the listing
+            # and get the recommendations
+            # since the table sparse, we compare both fks
+            ids = Similarity.objects.filter(Q(listing_1 = listing) | Q(listing_2 = listing)).values_list('listing_1', 'listing_2').order_by('-score')[:5]
+            # combine them,
+            pks = set([id[0] for id in ids] + [id[1] for id in ids])
+            if len(pks) > 0 :
+                pks.remove(listing.id)# do not recommend the same listing
+            recommendations = Listing.objects.filter(pk__in=pks).all()
+
+            # prepare them for the template 
+            listing_dict = {'listing': listing, 
+                            'recommendations': recommendations
+                            }
+```
+### Tests:
 The current system has some essential features. These include:
-- **Security features**: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.
+- **Security**: auditing, encrypted fields, CSRF tokenization, delete-restore, model and object level permissions. More features like two-factors authentication will be added to some apps.
 
 - **Tests**: some essentials tests were conducted to ensure the system is working fine. These include backend tests like permission tests, CSRF tests, ....
 

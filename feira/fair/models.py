@@ -52,7 +52,7 @@ class Listing(models.Model):
                                 max_digits=6,
                                 default=0)
                                   
-    image = models.ImageField(upload_to='listings_images',
+    image = models.ImageField(upload_to='images',
                              blank=True, # not required in the form
                              null=True) # can be NULL in the db
     owner = models.ForeignKey(User, 

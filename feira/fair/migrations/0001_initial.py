@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('creation_date', models.DateTimeField(editable=False)),
                 ('modification_date', models.DateTimeField()),
                 ('description', models.TextField(blank=True, max_length=1024)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='listings_images')),
+                ('image', models.ImageField(blank=True, null=True, upload_to='images')),
                 ('slug', models.SlugField(default='title', max_length=128, unique_for_date='created')),
             ],
             options={

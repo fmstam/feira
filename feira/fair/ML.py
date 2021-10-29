@@ -85,7 +85,8 @@ class SimilarityScorer(LoginRequiredMixin):
             features = self.listing_to_features(listing)
             # save them into a npy file
             np.save(f'{self.images_path}{self.npys_name}{os.sep}{listing.id}.npy', features)
-
+            
+        return HttpResponseRedirect(reverse('home'))
 
     def add_all_similarities(self, request):
         """

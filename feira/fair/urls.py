@@ -11,7 +11,7 @@ urlpatterns =[
     # these are to populate the system
     path('random_listings/', create_listings ),
     path('calc_scores/', SimilarityScorer().add_all_similarities ),
-    path('calc_features/', SimilarityScorer().calc_features, {'replace': True} ),
+    path('calc_features/', SimilarityScorer().calc_features, {'replace': False} ),
     path('update_scores/', SimilarityScorer().update_all_similarities ),
 
     # listing urls

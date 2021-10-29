@@ -35,7 +35,7 @@ class SimilarityScorer(LoginRequiredMixin):
                 images_path=settings.MEDIA_ROOT,
                 npys_name='npys', # to store features numpy files
                 image_input_size=224, # typical input shape for most nets
-                feature_extractor=None,
+                feature_extractor=None, # any pytorch nn.module 
                 preprocessor=None):
 
         self.metric = metric
@@ -85,7 +85,7 @@ class SimilarityScorer(LoginRequiredMixin):
             features = self.listing_to_features(listing)
             # save them into a npy file
             np.save(f'{self.images_path}{self.npys_name}{os.sep}{listing.id}.npy', features)
-            
+
         return HttpResponseRedirect(reverse('home'))
 
     def add_all_similarities(self, request):

@@ -40,6 +40,7 @@ class SimilarityScorer(LoginRequiredMixin):
 
         self.metric = metric
         self.images_path = images_path
+        self.npys_name = npys_name
         self.feature_extractor = feature_extractor
 
         if not self.feature_extractor:
@@ -69,18 +70,21 @@ class SimilarityScorer(LoginRequiredMixin):
         Calculate and store features for all images.
         """
 
+        # new listings only
         new_listings = Listing.objects.filter(Q(related_listing_1=None) & Q(related_listing_2=None))
-        query_sets = [new_listings]
+        if new_listings:
+            query_set = [new_listings.all()]
+        else:
+            query_set = []
         if replace:
             exist_listings = Listing.objects.exclude(Q(related_listing_1=None) & Q(related_listing_2=None))
-            query_sets.extend(exist_listings)
+            query_set.extend(exist_listings.all())
         
-        for query_set in query_sets:
-            for listing in query_set:
-                # get features
-                features = self.calc_features(listing)
-                # save them into a npy file
-            np.save(f'{self.images_path}{self.npys_name}{os.sep}{listing.id}.npy',features)
+        for listing in tqdm(query_set):
+            # get features
+            features = self.listing_to_features(listing)
+            # save them into a npy file
+            np.save(f'{self.images_path}{self.npys_name}{os.sep}{listing.id}.npy', features)
 
 
     def add_all_similarities(self, request):
@@ -150,7 +154,7 @@ class SimilarityScorer(LoginRequiredMixin):
 
 
 
-    def listing_to_feature(self, listing) :
+    def listing_to_features(self, listing) :
         # read the image
         input_image = Image.open(f'{self.images_path}{listing.image}')
 
@@ -167,8 +171,8 @@ class SimilarityScorer(LoginRequiredMixin):
         """
 
         # get features
-        listing_1_features = self.listing_to_feature(listing=listing_1)['fc'].detach().numpy()
-        listing_2_features = self.listing_to_feature(listing=listing_2)['fc'].detach().numpy()
+        listing_1_features = self.listing_to_features(listing=listing_1)['fc'].detach().numpy()
+        listing_2_features = self.listing_to_features(listing=listing_2)['fc'].detach().numpy()
 
         # get similarities
         score = self.metric(listing_1_features, listing_2_features)

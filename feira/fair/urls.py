@@ -11,6 +11,7 @@ urlpatterns =[
     # these are to populate the system
     path('random_listings/', create_listings ),
     path('calc_scores/', SimilarityScorer().add_all_similarities ),
+    path('calc_features/', SimilarityScorer().calc_features, {'replace': True} ),
     path('update_scores/', SimilarityScorer().update_all_similarities ),
 
     # listing urls
@@ -23,5 +24,7 @@ urlpatterns =[
     path('listings/new/', ListingCreateView.as_view(), name='create_a_listing'),
     path('listings/<int:pk>/edit', ListingUpdateView.as_view(), name='edit_a_listing'),
     path('listings/<int:pk>/delete', ListingDeleteView.as_view(), name='delete_a_listing')
-    
+
+
+
 ]

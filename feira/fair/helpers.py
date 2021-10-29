@@ -49,7 +49,7 @@ def create_listings(request, configurations_block="dummy_listings"):
     prices =  range(start, end, step)
     unique =  configurations['unique']
     extensions =  configurations['extensions'] #['*.jpeg', '*.jpg', '*.png']
-
+    
     for cate, folder in data_folders.items():
         files = []
         for extension in extensions:

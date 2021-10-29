@@ -51,7 +51,7 @@ class SimilarityScorer(LoginRequiredMixin):
             self.return_nodes = {"fc": "fc"} # last layer
 
         self.feature_extractor =  models.feature_extraction.create_feature_extractor(self.net, 
-                                                                                    return_nodes=self.return_nodes)
+                                                                                     return_nodes=self.return_nodes)
         
         if not preprocessor:
             self.preprocessor = transforms.Compose([
@@ -139,7 +139,7 @@ class SimilarityScorer(LoginRequiredMixin):
         # nested func to calc the features
         def get_features(listing) :
             # read the image
-            input_image = Image.open(f'{self.images_path}{os.sep}{listing.image}')
+            input_image = Image.open(f'{self.images_path}{listing.image}')
 
             # transform the image to fit the model
             input_tensor = self.preprocessor(input_image) 
@@ -155,9 +155,3 @@ class SimilarityScorer(LoginRequiredMixin):
         score = self.metric(listing_1_features, listing_2_features)
 
         return score
-
-
-
-
-
-

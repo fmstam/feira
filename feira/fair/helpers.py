@@ -19,17 +19,15 @@ from django.conf import settings
 from .models import Listing, Category   
 
 
-
-
 # configuration loaders
-def load_configurations(file='configurations.json', block="description"):
+def load_configurations(file='fair/configurations.json', block="dummy_listings"):
     """
         Load the configurations from a json file
     """
     with open(file) as json_file:
-            configurations = json.load(block)
+        configurations = json.load(json_file)
     
-    return configurations
+    return configurations["dummy_listings"]
 
 ### Dummy listings related helpers
 
@@ -51,11 +49,11 @@ def create_listings(request, configurations_block="dummy_listings"):
     prices =  range(start, end, step)
     unique =  configurations['unique']
     extensions =  configurations['extensions'] #['*.jpeg', '*.jpg', '*.png']
-
+    
     for cate, folder in data_folders.items():
         files = []
         for extension in extensions:
-            files_ = glob.glob(f'{data_path}{os.sep}{folder}{os.sep}{extension}')
+            files_ = glob.glob(f'{data_path}{folder}{os.sep}{extension}')
             files.extend(files_)
         category = Category.objects.get(name=cate)
 
@@ -67,17 +65,16 @@ def create_listings(request, configurations_block="dummy_listings"):
                               owner=request.user,
                               category=category
                               )
-            
-            
             listing.save()
 
             # store the image
-            image_file_name = f'listings_images{os.sep}{listing.id}{os.path.splitext(file)[-1]}'                                 
+            image_file_name = f'images{os.sep}{listing.id}{os.path.splitext(file)[-1]}'                                 
             listing.image.name = image_file_name
             listing.save()
 
-             # copy the file to MEDIA_ROOT/listing_images
+             # copy the file to MEDIA_ROOT/images
             listing_images_path = settings.MEDIA_ROOT
-            shutil.copyfile(file, f'{listing_images_path}{os.sep}{image_file_name}')
+            print(file, f'{listing_images_path}{image_file_name}')
+            shutil.copyfile(file, f'{listing_images_path}{image_file_name}')
 
     return HttpResponseRedirect(reverse('home'))

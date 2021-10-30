@@ -47,17 +47,20 @@ class Listing(models.Model):
     modification_date = models.DateTimeField(editable=False)
     description = models.TextField(max_length=1024,
                                     blank=True)
+
     price = models.DecimalField(blank=False,
                                 decimal_places=2,
                                 max_digits=6,
                                 default=0)
-                                  
+
     image = models.ImageField(upload_to='images',
                              blank=True, # not required in the form
                              null=True) # can be NULL in the db
+
     owner = models.ForeignKey(User, 
                                 on_delete=CASCADE,
                                 related_name="user_listings") # user id
+
     category = models.ForeignKey(Category, 
                                 on_delete=CASCADE,
                                 related_name="categories",
@@ -73,8 +76,7 @@ class Listing(models.Model):
                             unique_for_date='creation_date',
                             db_index=True
                             )
-
-
+                            
     class Meta:
         ordering = ['-modification_date']
         index_together = (('id', 'slug'))

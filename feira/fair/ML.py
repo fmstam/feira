@@ -71,11 +71,11 @@ class SimilarityScorer(LoginRequiredMixin):
         """
 
         # new listings only
+        query_set = []
         new_listings = Listing.objects.filter(Q(related_listing_1=None) & Q(related_listing_2=None))
         if new_listings:
-            query_set = [new_listings.all()]
-        else:
-            query_set = []
+            query_set.extend(new_listings.all())
+        
         if replace:
             exist_listings = Listing.objects.exclude(Q(related_listing_1=None) & Q(related_listing_2=None))
             query_set.extend(exist_listings.all())

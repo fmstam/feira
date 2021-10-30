@@ -11,7 +11,7 @@ Main requirements:
 - HTML 5
 - Bootstrap 5
 
-See requirements for a full **conda** environnement setup.
+**To run:** you can use the Dockerfile
 
 
 <p align="center">

@@ -137,3 +137,5 @@ dmypy.json
 
 # do not uppload my local configuration paths
 feira/fair/configurations.json
+
+

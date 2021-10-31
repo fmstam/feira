@@ -64,7 +64,19 @@ def generate_listing_json_object(user, title='test listing'):
 class ListAPITestCase(APITestCase):
     def setUp(self):
         self.user = create_user()
+        self.url = '/fair/api/listings/'
     
+    def test_list_listings(self):
+
+        n_listings = Listing.objects.count()
+        response = self.client.get(self.url)
+
+        # check pagination
+        self.assertIsNone(response.data['next'])
+        self.assertIsNone(response.data['previous'])
+        self.assertEqual(response.data['count'], n_listings)
+        self.assertEqual(len(response.data['results']), n_listings)
+
     def test_create_listing(self):
         # objects count
         n_listings = Listing.objects.count()
@@ -74,16 +86,39 @@ class ListAPITestCase(APITestCase):
         self.client.force_login(user=self.user)
 
         # post it
-        url = '/fair/api/listings/new/'
+        url = f'{self.url}new/'
         response = self.client.post(url, new_listing)
 
         # is it created?
-        if response.status_code == status.HTTP_201_CREATED:
-            print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            
         # and stored correctly?
         self.assertEqual(Listing.objects.count(), n_listings + 1)
+        # check the response matches
         for field, value in new_listing.items():
             self.assertEqual(response.data[field], value)
+    
+    def test_delete_listing(self):
+        
+        # create a listing
+        self.client.force_login(self.user)
+        self.assertEqual(Listing.objects.count(), 0)
+        listing = create_listing(user=self.user)
+        self.assertEqual(Listing.objects.count(), 1)
+
+        listing_id = listing.id
+        url = f'{self.url}{listing_id}/'
+        response = self.client.delete(url)
+        # no content 
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # removed from model
+        self.assertEqual(Listing.objects.count(), 0)
+
+        # or
+        # self.assertRaises(Listing.DoesNotExist,
+        #                   Listing.objects.get, id=listing_id)
+
 
 
 ### Tests

@@ -76,10 +76,10 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
         response = super(ListingRetrieveUpdateDestroyAPIView, self).delete(request,
                                                                            *args, 
                                                                            **kwargs)
+        print(response)
         # if request has succeeded, 
         # but that the client doesn't need to navigate away from its current page.
         if response.status_code == status.HTTP_204_NO_CONTENT:
-
             # remove cached data
             from django.core.cache import cache
             cache.delete(f'listing_data_{listing_id}')

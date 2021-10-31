@@ -43,7 +43,7 @@ class Listing(models.Model):
     """
 
     title = models.CharField(max_length=256)
-    creation_date = models.DateTimeField(editable=False)
+    creation_date = models.DateTimeField(editable=False, default=timezone.now)
     modification_date = models.DateTimeField(editable=False)
     description = models.TextField(max_length=1024,
                                     blank=True)
@@ -80,7 +80,7 @@ class Listing(models.Model):
     class Meta:
         ordering = ['-modification_date']
         index_together = (('id', 'slug'))
-        constraints = [models.CheckConstraint(check=models.Q(price__gte='0'), name='price_non_negative'),]
+        constraints = [models.CheckConstraint(check=models.Q(price__gt='0'), name='price_non_negative'),]
 
     def save(self, *args, **kwargs):
         """

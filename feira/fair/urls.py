@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 
 # views
 from .views import ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView
-from .api_views import ListingAPIView
+from .api_views import ListingAPIView, ListingCreateAPIView, ListingRetrieveUpdateDestroyAPIView
 
 # helpers and ML
 from .helpers import create_listings
@@ -34,6 +34,8 @@ urlpatterns =[
     path('listings/<int:pk>/delete', ListingDeleteView.as_view(), name='delete_a_listing'),
 
     # API views
-    path('api/v1/listings/', ListingAPIView.as_view()),
+    path('api/listings/', ListingAPIView.as_view(), name='api_listing'),
+    path('api/listings/new/', ListingCreateAPIView.as_view(), name='api_create_a_listing'),
+    path('api/listings/<int:id>/', ListingRetrieveUpdateDestroyAPIView.as_view(), name='api__a_listing'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

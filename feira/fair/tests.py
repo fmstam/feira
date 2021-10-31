@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.test import client
 from django.test.client import Client
 from rest_framework import status
+from rest_framework.test import APITestCase
 
 
 
@@ -22,11 +23,11 @@ import re as re
 
 
 ### List of tests
-# 1- basic tests of add and delete
-# 2- encryption tests
-# 3- CSRF tests
-# 4- permission tests
-
+# 1 - API tests
+# 2- basic tests of add and delete
+# 3- encryption tests
+# 4- CSRF tests
+# 5- permission tests
 
 
 ### shortcuts
@@ -44,12 +45,46 @@ def create_user(username=Faker().user_name(),
 def create_listing(user, title='test listing'):
     return Listing.objects.create( title=title,
                                    creation_date=datetime.now(),
-                                   category=Category.objects.last(),
+                                   category=None,
                                    modification_date=datetime.now(),
-                                   price=20,
+                                   price=19.99,
                                    owner=user
                                 )
     
+
+# for API tests
+def generate_listing_json_object(user, title='test listing'):
+    return {
+        'title': title,
+        'price': '19.99',
+        'owner': user.id,
+        'slug': 'test-listing'
+    }
+
+class ListAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = create_user()
+    
+    def test_create_listing(self):
+        # objects count
+        n_listings = Listing.objects.count()
+        new_listing = generate_listing_json_object(user=self.user)
+        
+        # login
+        self.client.force_login(user=self.user)
+
+        # post it
+        url = '/fair/api/listings/new/'
+        response = self.client.post(url, new_listing)
+
+        # is it created?
+        if response.status_code == status.HTTP_201_CREATED:
+            print(response.data)
+        # and stored correctly?
+        self.assertEqual(Listing.objects.count(), n_listings + 1)
+        for field, value in new_listing.items():
+            self.assertEqual(response.data[field], value)
+
 
 ### Tests
 # Listing common tests

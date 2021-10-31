@@ -57,13 +57,12 @@ class ListingAPIView(ListAPIView):
     pagination_class = ListingAPIPagination
 
 
-method_decorator(csrf_protect, 'dispatch')
+
 class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
     serializer_class = ListingSerializer
     queryset = Listing.objects.all()
 
 # one class for view, update, and delete
-method_decorator(csrf_protect, 'dispatch')
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ListingSerializer
     queryset = Listing.objects.all()

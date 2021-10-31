@@ -36,6 +36,6 @@ urlpatterns =[
     # API views
     path('api/listings/', ListingAPIView.as_view(), name='api_listing'),
     path('api/listings/new/', ListingCreateAPIView.as_view(), name='api_create_a_listing'),
-    path('api/listings/<int:id>/', ListingRetrieveUpdateDestroyAPIView.as_view(), name='api__a_listing'),
+    path('api/listings/<int:id>/', ListingRetrieveUpdateDestroyAPIView.as_view(), name='api_rud_a_listing'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

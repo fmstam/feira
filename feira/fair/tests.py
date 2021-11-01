@@ -106,8 +106,7 @@ class ListAPITestCase(APITestCase):
         listing = create_listing(user=self.user)
         self.assertEqual(Listing.objects.count(), 1)
 
-        listing_slug = listing.slug
-        url = f'{self.url}{listing_slug}/'
+        url = f'{self.url}{listing.slug}/'
         response = self.client.delete(url)
         # no content 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -150,11 +149,6 @@ class ListAPITestCase(APITestCase):
 
     
         
-        
-
-
-
-### Tests
 # Listing common tests
 class ListingTestCase(TestCase):
     def setUp(self):

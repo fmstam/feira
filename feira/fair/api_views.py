@@ -1,6 +1,7 @@
 ## rest
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import status
+from rest_framework.permissions import DjangoObjectPermissions
 # backend filters
 from django_filters.rest_framework import DjangoFilterBackend 
 from rest_framework.filters import SearchFilter
@@ -65,9 +66,8 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
     queryset = Listing.objects.all()
 
     def post(self, request, *args, **kwargs):
-
-        
-        ## use chaching protect against flooding
+ 
+        ## use caching protect against flooding
         # a request is already in the cache?
         if cache.has_key('listing_created'):
             # request received but no listing was created
@@ -85,6 +85,7 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ListingSerializer
     queryset = Listing.objects.all()
+    permission_classes = [DjangoObjectPermissions]
     lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):

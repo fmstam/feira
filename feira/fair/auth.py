@@ -15,7 +15,7 @@ class AuthTools():
     # listings
     VIEW_LISTING   = "fair.view_listing"
     CHANGE_LISTING = "fair.change_listing"
-    DELETE_LISTING = "fair.change_listing"
+    DELETE_LISTING = "fair.delete_listing"
 
     # logs
     VIEW_ACTIVITY_LOG   = "api.view_activity_log"

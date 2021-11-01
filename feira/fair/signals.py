@@ -13,9 +13,17 @@ from .auth import AuthTools # our manager
 from .models import ActivityLog, DeletedData, Listing
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
+from django.template.defaultfilters import slugify 
+
 
 
 ## 1. Signals on Listing model
+
+# Create unique slug when for listing
+@receiver(post_save, sender=Listing)
+def set_slug(sender, instance, **kwargs):
+    if not instance.slug:
+        instance.slug = slugify(f'{instance.owner}{instance.id}{instance.title}')
 
 # Set permission post-saving
 @receiver(post_save, sender=Listing)

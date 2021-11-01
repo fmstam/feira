@@ -119,6 +119,37 @@ class ListAPITestCase(APITestCase):
         # self.assertRaises(Listing.DoesNotExist,
         #                   Listing.objects.get, id=listing_id)
 
+    def test_edit_listing(self):
+        
+        # create a listing
+        self.client.force_login(self.user)
+        self.assertEqual(Listing.objects.count(), 0)
+        listing = create_listing(user=self.user)
+        self.assertEqual(Listing.objects.count(), 1)
+
+        # updated fields
+        data ={
+            "title": "updated title",
+        }
+        
+       
+        # patch them
+        url = f'{self.url}{listing.id}/'
+        response = self.client.patch(url, data, format='json', partial=True, required=False)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # check the updates were realized and none of other fields were effected
+        # updated_listing = Listing.objects.get(id=listing.id)
+        # self.assertEqual(updated_listing.title, updated_fields['title'])
+        # self.assertEqual(updated_listing.price, updated_fields['price'])
+        # self.assertEqual(updated_listing.description, listing.description)
+        # self.assertEqual(updated_listing.image, listing.image)
+        # self.assertEqual(updated_listing.creation_date, listing.creation_date)
+        # self.assertEqual(updated_listing.modification_date, listing.modification_date)
+        # self.assertEqual(updated_listing.owner, listing.owner)
+
+
+
 
 
 ### Tests
@@ -266,7 +297,7 @@ class CipherTestCase(TestCase):
         with connection.cursor() as db_cursor:
             db_cursor.execute(' SELECT action from fair_activitylog')
             encrypted = db_cursor.fetchone()[0]
-            print(encrypted)
+            # print(encrypted)
             self.assertNotEqual(encrypted, action)
 
 

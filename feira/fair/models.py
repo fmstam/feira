@@ -11,7 +11,9 @@ from django.urls import reverse
 # auth imports
 from django.contrib.auth.models import User
 
+# utils
 from fair.encryptions import EncryptedTextField
+
 
 
 
@@ -71,11 +73,7 @@ class Listing(models.Model):
     # accept_offers = models.BooleanField()
 
     # to create unique URL for lists
-    slug = models.SlugField(max_length=128,
-                            default='title',
-                            unique_for_date='creation_date',
-                            db_index=True
-                            )
+    slug = models.SlugField(max_length=128, null=True)
                             
     class Meta:
         ordering = ['-modification_date']
@@ -86,9 +84,14 @@ class Listing(models.Model):
         """
         Override the save method to setup created and modified fields
         """
+
+        # if it is going to create
         if not self.id:
             self.creation_date = timezone.now()
+
         self.modification_date = timezone.now()
+
+        
     
         return super(Listing, self).save(*args, **kwargs)
     

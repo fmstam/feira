@@ -21,9 +21,6 @@ from django.http import HttpResponseForbidden, response
 from django.utils import timezone
 
 
-
-
-
 # local stuff
 from .serializers import ListingSerializer
 from .models import Listing
@@ -76,7 +73,6 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
         response = super(ListingRetrieveUpdateDestroyAPIView, self).delete(request,
                                                                            *args, 
                                                                            **kwargs)
-        print(response)
         # if request has succeeded, 
         # but that the client doesn't need to navigate away from its current page.
         if response.status_code == status.HTTP_204_NO_CONTENT:
@@ -85,12 +81,14 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
             cache.delete(f'listing_data_{listing_id}')
         return response
     
+ 
     def update(self, request, *args, **kwargs):
         """
         Override the delete method.
         """
-
+        # print(kwargs)
         response = super(ListingRetrieveUpdateDestroyAPIView, self).update(request, *args, **kwargs)
+        print(response.status_code)
         # all good?
         if response.status_code == status.HTTP_200_OK:
             # update cache

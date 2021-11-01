@@ -4,15 +4,31 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "name": "Python: Django",
+            "name": "Python: runserver Django",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/feira/manage.py",
             "args": [
                 "runserver"
             ],
-            "django": true
+            "django": true,
+            "justMyCode": false
+
+        },
+        {
+            "name": "Python: test Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/feira/manage.py",
+            "args": [
+                "test",
+                "fair"
+            ],
+            "django": true,
+            "justMyCode": false
         }
+
     ]
 }

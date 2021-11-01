@@ -10,20 +10,26 @@ from .models import Listing
 class ListingSerializer(serializers.ModelSerializer):
     # override title to accept at least two chars
     title = serializers.CharField(min_length=2)
-    
+    owner = serializers.HiddenField(
+                            default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Listing
+        
+        
         fields = ('id', 
                   'title', 
-                  'creation_date', 
-                  'modification_date',
                   'description',
                   'price',
                   'image',
-                  'owner',
                   'category',
-                  'slug'
+                  'owner'
         )
+
+    def create(self, validated_data):
+        # set the owner
+        self.owner = self.context['request'].user
+        return super().create(validated_data)
 
   
 

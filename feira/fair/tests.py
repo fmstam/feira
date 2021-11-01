@@ -56,9 +56,7 @@ def create_listing(user, title='test listing'):
 def generate_listing_json_object(user, title='test listing'):
     return {
         'title': title,
-        'price': '19.99',
-        'owner': user.id,
-        'slug': 'test-listing'
+        'price': '19.99'
     }
 
 class ListAPITestCase(APITestCase):

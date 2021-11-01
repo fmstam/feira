@@ -12,6 +12,7 @@ class ListingSerializer(serializers.ModelSerializer):
     title = serializers.CharField(min_length=2)
     owner = serializers.HiddenField(
                             default=serializers.CurrentUserDefault())
+    slug = serializers.ReadOnlyField()
 
     class Meta:
         model = Listing
@@ -23,7 +24,10 @@ class ListingSerializer(serializers.ModelSerializer):
                   'price',
                   'image',
                   'category',
-                  'owner'
+                  'owner',
+                  'creation_date',
+                  'modification_date',
+                  'slug'
         )
 
     def create(self, validated_data):

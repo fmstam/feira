@@ -63,13 +63,13 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ListingSerializer
     queryset = Listing.objects.all()
-    lookup_field = 'id'
+    lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):
         """
         Override the delete method.
         """
-        listing_id  = request.data.get('id')
+        listing_slug  = request.data.get('slug')
         response = super(ListingRetrieveUpdateDestroyAPIView, self).delete(request,
                                                                            *args, 
                                                                            **kwargs)
@@ -78,7 +78,7 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
         if response.status_code == status.HTTP_204_NO_CONTENT:
             # remove cached data
             from django.core.cache import cache
-            cache.delete(f'listing_data_{listing_id}')
+            cache.delete(f'listing_data_{listing_slug}')
         return response
     
  
@@ -94,7 +94,7 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
             # update cache
             listing = response.data
             from django.core.cache import cache
-            cache.set(f'listing_data_{listing["id"]}',{
+            cache.set(f'listing_data_{listing["slug"]}',{
                 'title': listing['title'],
                 'description': listing['description'],
                 'price' : listing['price'],

@@ -88,6 +88,8 @@ class ListingView(CreateView):
                 # listing_dict = self.get_listing({'category': kwargs['category_id']})
 
             # single listing 
+            elif 'slug' in kwargs.keys():
+                template_name, listing_dict = self.get_listing({'slug': kwargs['slug']}, single=True)
             elif 'pk' in kwargs.keys():  # a specific listing
                  template_name, listing_dict = self.get_listing({'pk': kwargs['pk']}, single=True)
 

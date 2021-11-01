@@ -13,6 +13,8 @@ from django.contrib.auth.models import User
 
 # utils
 from fair.encryptions import EncryptedTextField
+from django.template.defaultfilters import slugify 
+from .utils import generate_random_token
 
 
 
@@ -45,7 +47,7 @@ class Listing(models.Model):
     """
 
     title = models.CharField(max_length=256)
-    creation_date = models.DateTimeField(editable=False, default=timezone.now)
+    creation_date = models.DateTimeField(editable=False, auto_now=True)
     modification_date = models.DateTimeField(editable=False)
     description = models.TextField(max_length=1024,
                                     blank=True)
@@ -73,13 +75,16 @@ class Listing(models.Model):
     # accept_offers = models.BooleanField()
 
     # to create unique URL for lists
-    slug = models.SlugField(max_length=128, null=True)
+    slug = models.SlugField(max_length=128, 
+                            unique=True,
+                            db_index=True)
                             
     class Meta:
         ordering = ['-modification_date']
         index_together = (('id', 'slug'))
         constraints = [models.CheckConstraint(check=models.Q(price__gt='0'), name='price_non_negative'),]
 
+ 
     def save(self, *args, **kwargs):
         """
         Override the save method to setup created and modified fields
@@ -88,19 +93,18 @@ class Listing(models.Model):
         # if it is going to create
         if not self.id:
             self.creation_date = timezone.now()
+            if not self.slug:
+                    self.slug = f'{generate_random_token()}-{slugify(self.title)}'
 
         self.modification_date = timezone.now()
 
-        
-    
         return super(Listing, self).save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('fair:category_listings', args=[self.slug])
-    
+        return reverse('fair:view_a_listing_with_slug', args=[self.slug])
+
 
 ## Activity log models
-
 class ActivityLog(models.Model):
     by = models.ForeignKey(User, 
                             null=True,

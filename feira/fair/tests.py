@@ -44,9 +44,6 @@ def create_user(username=Faker().user_name(),
                 
 def create_listing(user, title='test listing'):
     return Listing.objects.create( title=title,
-                                   creation_date=datetime.now(),
-                                   category=None,
-                                   modification_date=datetime.now(),
                                    price=19.99,
                                    owner=user
                                 )
@@ -75,27 +72,32 @@ class ListAPITestCase(APITestCase):
         self.assertEqual(response.data['count'], n_listings)
         self.assertEqual(len(response.data['results']), n_listings)
 
-    def test_create_listing(self):
-        # objects count
+    def test_create_(self):
+        from django.core.cache import cache
+         # objects count
         n_listings = Listing.objects.count()
         new_listing = generate_listing_json_object(user=self.user)
         
         # login
         self.client.force_login(user=self.user)
 
+        # is the cache set?
+        self.assertFalse(cache.has_key('listing_created'))
         # post it
         url = f'{self.url}new/'
         response = self.client.post(url, new_listing)
 
-        # is it created?
+        # is it created and the cache is updated?
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(cache.has_key('listing_created'))
+
             
         # and stored correctly?
         self.assertEqual(Listing.objects.count(), n_listings + 1)
         # check the response matches
         for field, value in new_listing.items():
             self.assertEqual(response.data[field], value)
-    
+        
     def test_delete_listing(self):
         
         # create a listing
@@ -104,8 +106,8 @@ class ListAPITestCase(APITestCase):
         listing = create_listing(user=self.user)
         self.assertEqual(Listing.objects.count(), 1)
 
-        listing_id = listing.id
-        url = f'{self.url}{listing_id}/'
+        listing_slug = listing.slug
+        url = f'{self.url}{listing_slug}/'
         response = self.client.delete(url)
         # no content 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -132,7 +134,7 @@ class ListAPITestCase(APITestCase):
         
        
         # patch them
-        url = f'{self.url}{listing.id}/'
+        url = f'{self.url}{listing.slug}/'
         response = self.client.patch(url, data, format='json', partial=True, required=False)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -146,7 +148,9 @@ class ListAPITestCase(APITestCase):
         # self.assertEqual(updated_listing.modification_date, listing.modification_date)
         # self.assertEqual(updated_listing.owner, listing.owner)
 
-
+    
+        
+        
 
 
 
@@ -166,7 +170,7 @@ class ListingTestCase(TestCase):
         self.assertEqual(Listing.objects.count(), 1)
 
         # check it is now available
-        url =  f'{self.listing_url}/{listing.id}'
+        url =  f'{self.listing_url}/{listing.slug}'
         response = self.client.get(url)
 
         self.assertTrue(response.status_code, status.HTTP_200_OK)
@@ -181,20 +185,20 @@ class ListingTestCase(TestCase):
         self.assertEqual(Listing.objects.count(), 1)
 
         # check it is now available
-        url =  f'{self.listing_url}/{listing.id}'
+        url =  f'{self.listing_url}/{listing.slug}'
         response = self.client.get(url)
         # can be accessed?
         self.assertTrue(response.status_code, status.HTTP_200_OK)
 
         # now let us delete it
-        id =  listing.id
+        slug =  listing.slug
         listing.delete()
 
         # is it there anymore?
         self.assertEqual(Listing.objects.count(), 0)
 
         # can be accessed anymore?
-        url =  f'{self.listing_url}/{id}'
+        url =  f'{self.listing_url}/{slug}'
         response = self.client.get(url)
         self.assertTrue(response.status_code, status.HTTP_404_NOT_FOUND)
     
@@ -215,7 +219,7 @@ class ListingTestCase(TestCase):
         client.force_login(self.user)
 
         # let us try to delete it without proper csrf handeling
-        url = f'{self.listing_url}/{listing.id}/delete'
+        url = f'{self.listing_url}/{listing.slug}/delete'
         response = client.post(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) 
         # the entry still there?
@@ -337,7 +341,7 @@ class ListingPerObjectPermissionTestCase(TestCase):
         )
 
         # check url authorization
-        url =  f'/fair/listings/{self.listing.id}/edit'
+        url =  f'/fair/listings/{self.listing.slug}/edit'
         
         # authorized user
         login = self.client.login(username='auth_user', password='12345')

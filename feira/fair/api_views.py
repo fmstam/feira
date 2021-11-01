@@ -11,6 +11,10 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+# caching
+from django.core.cache import cache
+
+# decorators
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 
@@ -19,6 +23,7 @@ from django.http import HttpResponseForbidden, response
 
 ## utils
 from django.utils import timezone
+from rest_framework.response import Response
 
 
 # local stuff
@@ -59,6 +64,23 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
     serializer_class = ListingSerializer
     queryset = Listing.objects.all()
 
+    def post(self, request, *args, **kwargs):
+
+        
+        ## use chaching protect against flooding
+        # a request is already in the cache?
+        if cache.has_key('listing_created'):
+            # request received but no listing was created
+            return Response(status.HTTP_200_OK) 
+
+        # otherwise, post the request and check if we need to store it
+        response =  super().post(request, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            # make a time gap of 300 ms to avoid db flooding
+            cache.set('listing_created', True, timeout=300)
+        return response
+
+
 # one class for view, update, and delete
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ListingSerializer
@@ -76,8 +98,7 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
         # if request has succeeded, 
         # but that the client doesn't need to navigate away from its current page.
         if response.status_code == status.HTTP_204_NO_CONTENT:
-            # remove cached data
-            from django.core.cache import cache
+            # remove the cached data
             cache.delete(f'listing_data_{listing_slug}')
         return response
     
@@ -88,7 +109,6 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
         """
         # print(kwargs)
         response = super(ListingRetrieveUpdateDestroyAPIView, self).update(request, *args, **kwargs)
-        print(response.status_code)
         # all good?
         if response.status_code == status.HTTP_200_OK:
             # update cache

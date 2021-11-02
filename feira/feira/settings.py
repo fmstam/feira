@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'sorl.thumbnail',
     'guardian',
+    'rest_framework',
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

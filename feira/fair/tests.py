@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.test import client
 from django.test.client import Client
 from rest_framework import status
+from rest_framework.test import APITestCase
 
 
 
@@ -22,11 +23,11 @@ import re as re
 
 
 ### List of tests
-# 1- basic tests of add and delete
-# 2- encryption tests
-# 3- CSRF tests
-# 4- permission tests
-
+# 1 - API tests
+# 2- basic tests of add and delete
+# 3- encryption tests
+# 4- CSRF tests
+# 5- permission tests
 
 
 ### shortcuts
@@ -43,15 +44,111 @@ def create_user(username=Faker().user_name(),
                 
 def create_listing(user, title='test listing'):
     return Listing.objects.create( title=title,
-                                   creation_date=datetime.now(),
-                                   category=Category.objects.last(),
-                                   modification_date=datetime.now(),
-                                   price=20,
+                                   price=19.99,
                                    owner=user
                                 )
     
 
-### Tests
+# for API tests
+def generate_listing_json_object(user, title='test listing'):
+    return {
+        'title': title,
+        'price': '19.99'
+    }
+
+class ListAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = create_user()
+        self.url = '/fair/api/listings/'
+    
+    def test_list_listings(self):
+
+        n_listings = Listing.objects.count()
+        response = self.client.get(self.url)
+
+        # check pagination
+        self.assertIsNone(response.data['next'])
+        self.assertIsNone(response.data['previous'])
+        self.assertEqual(response.data['count'], n_listings)
+        self.assertEqual(len(response.data['results']), n_listings)
+
+    def test_create_(self):
+        from django.core.cache import cache
+         # objects count
+        n_listings = Listing.objects.count()
+        new_listing = generate_listing_json_object(user=self.user)
+        
+        # login
+        self.client.force_login(user=self.user)
+
+        # is the cache set?
+        self.assertFalse(cache.has_key('listing_created'))
+        # post it
+        url = f'{self.url}new/'
+        response = self.client.post(url, new_listing)
+
+        # is it created and the cache is updated?
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(cache.has_key('listing_created'))
+
+            
+        # and stored correctly?
+        self.assertEqual(Listing.objects.count(), n_listings + 1)
+        # check the response matches
+        for field, value in new_listing.items():
+            self.assertEqual(response.data[field], value)
+        
+    def test_delete_listing(self):
+        
+        # create a listing
+        self.client.force_login(self.user)
+        self.assertEqual(Listing.objects.count(), 0)
+        listing = create_listing(user=self.user)
+        self.assertEqual(Listing.objects.count(), 1)
+
+        url = f'{self.url}{listing.slug}/'
+        response = self.client.delete(url)
+        # no content 
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # removed from model
+        self.assertEqual(Listing.objects.count(), 0)
+
+        # or
+        # self.assertRaises(Listing.DoesNotExist,
+        #                   Listing.objects.get, id=listing_id)
+
+    def test_edit_listing(self):
+        
+        # create a listing
+        self.client.force_login(self.user)
+        self.assertEqual(Listing.objects.count(), 0)
+        listing = create_listing(user=self.user)
+        self.assertEqual(Listing.objects.count(), 1)
+
+        # updated fields
+        data ={
+            "title": "updated title",
+        }
+        
+       
+        # patch them
+        url = f'{self.url}{listing.slug}/'
+        response = self.client.patch(url, data, format='json', partial=True, required=False)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # check the updates were realized and none of other fields were effected
+        # updated_listing = Listing.objects.get(id=listing.id)
+        # self.assertEqual(updated_listing.title, updated_fields['title'])
+        # self.assertEqual(updated_listing.price, updated_fields['price'])
+        # self.assertEqual(updated_listing.description, listing.description)
+        # self.assertEqual(updated_listing.image, listing.image)
+        # self.assertEqual(updated_listing.creation_date, listing.creation_date)
+        # self.assertEqual(updated_listing.modification_date, listing.modification_date)
+        # self.assertEqual(updated_listing.owner, listing.owner)
+
+    
+        
 # Listing common tests
 class ListingTestCase(TestCase):
     def setUp(self):
@@ -67,7 +164,7 @@ class ListingTestCase(TestCase):
         self.assertEqual(Listing.objects.count(), 1)
 
         # check it is now available
-        url =  f'{self.listing_url}/{listing.id}'
+        url =  f'{self.listing_url}/{listing.slug}'
         response = self.client.get(url)
 
         self.assertTrue(response.status_code, status.HTTP_200_OK)
@@ -82,20 +179,20 @@ class ListingTestCase(TestCase):
         self.assertEqual(Listing.objects.count(), 1)
 
         # check it is now available
-        url =  f'{self.listing_url}/{listing.id}'
+        url =  f'{self.listing_url}/{listing.slug}'
         response = self.client.get(url)
         # can be accessed?
         self.assertTrue(response.status_code, status.HTTP_200_OK)
 
         # now let us delete it
-        id =  listing.id
+        slug =  listing.slug
         listing.delete()
 
         # is it there anymore?
         self.assertEqual(Listing.objects.count(), 0)
 
         # can be accessed anymore?
-        url =  f'{self.listing_url}/{id}'
+        url =  f'{self.listing_url}/{slug}'
         response = self.client.get(url)
         self.assertTrue(response.status_code, status.HTTP_404_NOT_FOUND)
     
@@ -116,7 +213,7 @@ class ListingTestCase(TestCase):
         client.force_login(self.user)
 
         # let us try to delete it without proper csrf handeling
-        url = f'{self.listing_url}/{listing.id}/delete'
+        url = f'{self.listing_url}/{listing.slug}/delete'
         response = client.post(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) 
         # the entry still there?
@@ -196,7 +293,7 @@ class CipherTestCase(TestCase):
         with connection.cursor() as db_cursor:
             db_cursor.execute(' SELECT action from fair_activitylog')
             encrypted = db_cursor.fetchone()[0]
-            print(encrypted)
+            # print(encrypted)
             self.assertNotEqual(encrypted, action)
 
 
@@ -238,7 +335,7 @@ class ListingPerObjectPermissionTestCase(TestCase):
         )
 
         # check url authorization
-        url =  f'/fair/listings/{self.listing.id}/edit'
+        url =  f'/fair/listings/{self.listing.slug}/edit'
         
         # authorized user
         login = self.client.login(username='auth_user', password='12345')

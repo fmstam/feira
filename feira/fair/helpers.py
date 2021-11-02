@@ -9,25 +9,22 @@ from datetime import datetime
 import random
 from pathlib import Path
 import shutil
-import json
+from tqdm import tqdm
 
 # django and project stuff
 from django.http import HttpResponseRedirect
 from django.urls.base import reverse
 from django.conf import settings
+from django.template.defaultfilters import slugify 
+
 
 from .models import Listing, Category   
 
+# utils
+from .utils import load_configurations, generate_random_token
 
-# configuration loaders
-def load_configurations(file='fair/configurations.json', block="dummy_listings"):
-    """
-        Load the configurations from a json file
-    """
-    with open(file) as json_file:
-        configurations = json.load(json_file)
-    
-    return configurations["dummy_listings"]
+
+
 
 ### Dummy listings related helpers
 
@@ -76,5 +73,15 @@ def create_listings(request, configurations_block="dummy_listings"):
             listing_images_path = settings.MEDIA_ROOT
             print(file, f'{listing_images_path}{image_file_name}')
             shutil.copyfile(file, f'{listing_images_path}{image_file_name}')
+
+    return HttpResponseRedirect(reverse('home'))
+
+def fix_slugs(request):
+    listings  = Listing.objects.all()
+    for listing in tqdm(listings):
+        listing.slug = f'{generate_random_token()}-{slugify(listing.title)}'
+
+    # touch the db once
+    Listing.objects.bulk_update(listings, ['slug'])
 
     return HttpResponseRedirect(reverse('home'))

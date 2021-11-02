@@ -18,20 +18,21 @@ class AuthTools():
     DELETE_LISTING = "fair.delete_listing"
 
     # logs
-    VIEW_ACTIVITY_LOG   = "api.view_activity_log"
-    CHANGE_ACTIVITY_LOG = "api.change_activity_log"
+    VIEW_ACTIVITY_LOG   = "fair.view_activity_log"
+    CHANGE_ACTIVITY_LOG = "fair.change_activity_log"
 
     # ML 
-    REBASE_ML             = "api.rebase_ml"
-    CHANGE_CATEGORIES     = "api.change_categories"
-    CREATE_DUMMY_LISTINGS = "api.create_dummy_lists"
+    REBASE_ML             = "fair.rebase_ml"
+    CHANGE_CATEGORIES     = "fair.change_categories"
+    CREATE_DUMMY_LISTINGS = "fair.create_dummy_lists"
 
     
     # group_name: [api.privilege, ...] dictionary
     group_permissions = {
                         "manager": [VIEW_LISTING, 
                                     CHANGE_LISTING,
-                                    DELETE_LISTING],
+                                    DELETE_LISTING,
+                                    ],
                                     
                         "user": [VIEW_LISTING,
                                 CHANGE_LISTING,
@@ -42,7 +43,6 @@ class AuthTools():
     def initialize(sender, **kwargs):
         AuthTools.assign_permissions(AuthTools.group_permissions)
 
-   
     @staticmethod
     def assign_permissions (group_permissions_dict): 
         """

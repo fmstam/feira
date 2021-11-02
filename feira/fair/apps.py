@@ -8,7 +8,7 @@ class FairConfig(AppConfig):
 
     def ready(self):
         # after migration and group creation, assign permissions
-        # post_migrate.connect(AuthTools.initialize, sender=self)
+        post_migrate.connect(AuthTools.initialize, sender=self)
 
         # load signals 
         import fair.signals

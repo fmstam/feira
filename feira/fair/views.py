@@ -2,7 +2,9 @@ from django import shortcuts
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic import ListView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 
@@ -16,7 +18,13 @@ from .auth import AuthTools
 from .forms import ListingForm
 from .models import Listing, Similarity
 
+# ML and celery tasks
+from .ML import ml_calc_features
+from celery.result import AsyncResult
 
+
+# utils
+import json
 
 class OwnershipMixin():
     """
@@ -31,8 +39,9 @@ class OwnershipMixin():
 
 
 # view class
-class ListingView(CreateView):
-    form_class = ListingForm
+class ListingView(View):
+    #form_class = ListingForm
+    http_method_names = ['get', 'head']
     
     def get_listing(self, filter, single=False):
         """
@@ -168,3 +177,50 @@ class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         Make sure the user is logged in
         """
         return reverse('accounts:login')
+
+
+
+class MLDashboard(LoginRequiredMixin, View):
+    """
+    ML dashboard class
+    """
+    http_method_names = ['get', 'head']
+    template_name = 'fair/ml_calc_features.html'
+
+    def get(self, request, *args, **kwargs):
+        """
+        Typical GET handler
+        """
+        ## check if user is allowed to access it.
+        # ...
+
+        ## check if task already has an id
+        if 'task_id' in kwargs.keys():
+            result = AsyncResult(kwargs['task_id'])
+            response_data = {
+                'state': result.state,
+                'details': result.info, # the progress is here, see 
+            }
+            return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+        else: # create a task 
+            if kwargs['task_name'] == 'ml_calc_features':
+                task = ml_calc_features.delay()
+        
+        return render(request, 
+                      self.template_name,{
+                      'task_id':task.task_id
+                       })
+
+        
+
+
+
+        
+
+
+
+
+
+
+

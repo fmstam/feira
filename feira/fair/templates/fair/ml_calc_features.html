@@ -1,0 +1,37 @@
+{% extends "home.html" %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+    {% block listings %}
+
+    <div class="container main-container">
+        <div class="row d-flex justify-content-center">
+                    <div class="col-md-offset-2 col-md-3 content">
+                        <div class="card shadow-sm"> 
+                            <div class="card-body">    
+                                <h5 class="card-title"> Calc features </h5>
+                                <p class="card-text"> Calculate features</p>
+                                <div class="clearfix mb-1"> 
+                                    <progress id="task_progress" value="0" max={{500}}> </progress> 
+
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+            
+            </div>
+    </div>
+    <script>
+        function updateProgress (progressUrl) {
+            fetch(progressUrl).then(function(response) {
+                response.json().then(function(data) {
+                    document.getElementById("task_progress").value = data.details.current;
+                    setTimeout(updateProgress, 500, progressUrl);
+                });
+            });
+        }
+        var progressUrl = '{% url "fair:calc_features" task_id %}';  // django template usage
+        updateProgress(progressUrl);
+    </script>
+    {% endblock %}
+    

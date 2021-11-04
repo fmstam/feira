@@ -85,7 +85,7 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ListingSerializer
     queryset = Listing.objects.all()
-    permission_classes = [DjangoObjectPermissions]
+    permission_classes = [DjangoObjectPermissions] # with dj-guardina backend
     lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):

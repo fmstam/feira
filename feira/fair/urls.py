@@ -5,8 +5,8 @@ from django.urls.resolvers import URLPattern
 from django.views.generic.base import TemplateView
 
 # views
-from .views import ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView, \
-    MLDashboard
+from .views import DashboardView, ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView, \
+    DashboardView, FeaturesCalcView
 from .api_views import ListingAPIView, ListingCreateAPIView, ListingRetrieveUpdateDestroyAPIView
 
 # helpers and ML
@@ -20,8 +20,9 @@ urlpatterns =[
     path('random_listings/', create_listings ),
     path('fix_slugs/', fix_slugs ),
     # path('calc_scores/', SimilarityScorer().add_all_similarities ),
-    path('calc_features/<str:task_id>/', MLDashboard.as_view() , {'task_name': 'ml_calc_features'}, name="calc_features" ),
-    path('calc_features/', MLDashboard.as_view() , {'task_name': 'ml_calc_features'}, name="calc_features" ),
+    path('calc_features/<str:acf_task_id>/', FeaturesCalcView.as_view() , name="calc_features" ),
+    path('dash/', DashboardView.as_view() , name="dash" ),
+
     # path('update_scores/', SimilarityScorer().update_all_similarities ),
 
     # typical views

@@ -1,0 +1,95 @@
+{% extends "home.html" %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+    {% block listings %}
+    <h5 style="margin-left: 1em;">Machine Learning Dashboard:</h5>
+
+    <div class="container main-container">
+        <!-- <div class="row d-flex justify-content-center"> -->
+            <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3 ">
+                    <!-- <div class="col-md-offset-1 col-md-4 content"> -->
+                    <!-- 1. Analyze and calculate features ACF -->
+                    <div class="col">
+                        <div class="card shadow-sm"> 
+                            <!-- put image here -->
+                            <div class="card-body">    
+                                <h6 class="card-title"> Generate features </h6>
+                                <p class="card-text" id="ACF_card_status"> </p>
+                                <div class="clearfix mb-1"> 
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped active" role="progressbar"
+                                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="ACF_task_progress">
+                                          Pending
+                                        </div>
+                                      </div>
+                                      {% if ACF_IDLE %} 
+                                      <form action="" method="post">
+                                          {% csrf_token %}
+                                          <input type="hidden" name="method" value="ACF"/>
+                                          <input class="btn btn-primary" type="submit" value="Start"/>
+                                      </form>
+                                      {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+
+                    <!-- 2. Calculate scores  CS-->
+                    <div class="col">
+                        <div class="card shadow-sm"> 
+                            <!-- put image here -->
+                            <div class="card-body">    
+                                <h6 class="card-title"> Calculate scores </h6>
+                                <p class="card-text" id="CS_card_status"></p>
+                                <div class="clearfix mb-1"> 
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped active" role="progressbar"
+                                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="CS_task_progress">
+                                        </div>
+                                      </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+            </div>
+    </div>
+
+
+{% if not ACF_IDLE %}
+    <script>
+        function updateACFProgress (progressUrl) {
+            fetch(progressUrl).then(function(response) {
+                response.json().then(function(data) {
+                    if (data.state == 'SUCCESS'){
+                        progress = '100%';
+                        state = 'Finished'
+                    }
+                    else{
+                        progress = Math.round(100 * data.details.current) + '%';
+                        if (data.state == 'PENDING'){
+                            state = 'Pending'
+                        }
+                        if (data.state == 'STARTED'){
+                            state = 'Starting'
+                        }
+                        if (data.state == 'PROGRESS'){
+                            state = 'Processing ...'
+                        }
+                        setTimeout(updateACFProgress, 500, progressUrl);
+                    }
+                    document.getElementById("ACF_card_status").innerHTML = `State: ${state}`                    
+                    document.getElementById("ACF_task_progress").style.width = progress;
+                    document.getElementById("ACF_task_progress").innerHTML = progress;   
+                });
+            });
+        }
+
+            let progressUrl = '{% url "fair:calc_features" acf_task_id %}';  // django template usage
+            updateACFProgress(progressUrl);
+    </script>
+    {% endif %}
+
+
+    {% endblock %}
+    

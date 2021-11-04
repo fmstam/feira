@@ -1,7 +1,6 @@
-from django import shortcuts
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render,  get_object_or_404, get_list_or_404, redirect
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic import ListView
@@ -11,7 +10,7 @@ from django.utils.decorators import method_decorator
 
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, get_list_or_404
+
 from django.db.models import Q
 
 from .auth import AuthTools
@@ -20,8 +19,10 @@ from .models import Listing, Similarity
 
 # ML and celery tasks
 from .ML import ml_calc_features
-from celery.result import AsyncResult
 
+import celery
+from celery.result import AsyncResult
+from celery.states import state, PENDING, SUCCESS, STARTED
 
 # utils
 import json
@@ -86,7 +87,7 @@ class ListingView(View):
          For example, looking up all listing of a given owner returns a list of listing
          while looking up a single listing by its pk returns a single listing
         """
-        
+                
         if kwargs: # any filters?
             # multiple listing filters
             if 'owner_id' in kwargs.keys():  # for a specific user
@@ -112,7 +113,6 @@ class ListingView(View):
                      listing_dict
                      )
 
-
 # create new class
 method_decorator(csrf_protect, 'dispatch')
 class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
@@ -135,7 +135,6 @@ class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
         self.object.owner = self.request.user # set the fk
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
-
 
 # edit class
 method_decorator(csrf_protect, 'dispatch')
@@ -161,12 +160,10 @@ class ListingUpdateView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-
 method_decorator(csrf_protect, 'dispatch')
 class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, DeleteView):
     model = Listing
     success_message = "Listing is deleted successfully"
-
 
     def get_success_url(self, **kwargs) -> str:
         """instead of using reverse_lazy"""
@@ -179,13 +176,35 @@ class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         return reverse('accounts:login')
 
 
+method_decorator(csrf_protect, 'dispatch')        
+class DashboardView(LoginRequiredMixin, View):
+    http_method_names = ['get', 'post', 'head']
+    template_name = 'fair/dashboard.html'
+    
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {
+            'ACF_IDLE': True, 
+            'CF_IDLE': True 
+            })
+    
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('method') == 'ACF':
+            # start the task
+            task = ml_calc_features.delay()
+            # update the dashboard which
+            return render(request, self.template_name, {
+                        'ACF_IDLE': False,
+                        'acf_task_id': task.task_id
+            })
+    
 
-class MLDashboard(LoginRequiredMixin, View):
+
+class FeaturesCalcView(LoginRequiredMixin, View):
     """
     ML dashboard class
     """
     http_method_names = ['get', 'head']
-    template_name = 'fair/ml_calc_features.html'
+    template_name = 'fair/dashboard.html'
 
     def get(self, request, *args, **kwargs):
         """
@@ -195,32 +214,15 @@ class MLDashboard(LoginRequiredMixin, View):
         # ...
 
         ## check if task already has an id
-        if 'task_id' in kwargs.keys():
-            result = AsyncResult(kwargs['task_id'])
-            response_data = {
-                'state': result.state,
-                'details': result.info, # the progress is here, see 
-            }
-            return HttpResponse(json.dumps(response_data), content_type='application/json')
-
-        else: # create a task 
-            if kwargs['task_name'] == 'ml_calc_features':
-                task = ml_calc_features.delay()
-        
-        return render(request, 
-                      self.template_name,{
-                      'task_id':task.task_id
-                       })
-
-        
-
-
-
-        
-
-
-
-
-
-
-
+       
+        result = AsyncResult(kwargs['acf_task_id'])
+        response_data = {
+            'state': result.state,
+            'details': result.info, # the progress is here, see 
+        }
+        # if not finished yet
+        if response_data['state'] != state(SUCCESS):
+            # pending or started   
+            if (response_data['state'] == state(PENDING)) or (response_data['state'] == state(STARTED)):
+                response_data['details']['current'] = 0
+        return HttpResponse(json.dumps(response_data), content_type='application/json')

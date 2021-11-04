@@ -23,10 +23,48 @@ from django.urls.base import reverse
 from django.db.models import Q
 
 
+# celery 
 from feira.celery import app
 import celery
+from celery.result import AsyncResult
+from celery.states import state, PENDING, SUCCESS, STARTED
 
+class TaskResult():
 
+    def __init__(self,
+                task_id,
+                task_state='UNKNOWN',
+                current_results=None):
+        self.task_id = task_id
+        self.task_state = task_state
+        self.current_results = current_results
+    
+    @classmethod    
+    def collect(cls, results_collector, **kwargs):
+        """
+            A class method to collect celery tasks' results
+            :param: results_collector
+        """
+        
+        if 'task_id' in kwargs.keys():
+            task_id = kwargs['task_id']
+            response_data = results_collector(task_id)
+            task_state = response_data.state
+            current_results = response_data.info
+
+            # if not finished yet
+            if response_data['state'] != state(SUCCESS):
+                # pending or started   
+                if (response_data['state'] == state(PENDING)) or (response_data['state'] == state(STARTED)):
+                    current_results = None
+
+        snapshot = cls(task_id=task_id,
+                      task_state=state,
+                      current_results=current_results)
+        
+        
+
+        
 
 class SimilarityScorer():
     """
@@ -211,18 +249,18 @@ def ml_calc_features(self):
         exist_listings = Listing.objects.exclude(Q(related_listing_1=None) & Q(related_listing_2=None))
         query_set.extend(exist_listings.all())
     
-    total = len(query_set)
-    i = 0
-    for listing in tqdm(query_set):
+    step = 1.0 / len(query_set)
+    current = 0
+    for listing in query_set:
         # get features
         features = scorer.calc_listing_features(listing, images_path)
         # save them into a npy file
         np.save(f'{images_path}{npys_name}{os.sep}{listing.id}.npy', features)
         self.update_state(
-                    state='CALC_FEATURES_PROGRESS',
+                    state='PROGRESS',
                     meta={
-                        'current': i,
-                        'total': total,
+                        'current': current
                     })
-        i += 1
+        current += step
+        print(current)
     return True

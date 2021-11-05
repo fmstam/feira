@@ -2,8 +2,7 @@
     Permissions and Authentication helpers
 """
 
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
+
 
 
 class AuthTools():
@@ -52,6 +51,8 @@ class AuthTools():
     @staticmethod
     def initialize(sender, **kwargs):
         
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
         # create permissions for dashboard
         # via modeless permission objects
         content_type = ContentType.objects.get_for_model(Permission)

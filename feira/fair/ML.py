@@ -66,7 +66,7 @@ class TaskResult():
 
         
 
-class SimilarityScorer():
+class FeatureExtractor():
     """
     Calculate the similarities between listings and store the similarity scores in a table.
     NOTE: This class requires a two-factor auth which will be added int he next sprint.
@@ -197,7 +197,6 @@ class SimilarityScorer():
         return  self.feature_extractor(input_batch)['fc'].detach().numpy()
 
 
-
     def get_score (self, listing_1_features, listing_2_features):
         return self.metric(listing_1_features, listing_2_features)
 
@@ -215,30 +214,23 @@ class SimilarityScorer():
     #     return listing_features
 
         
-import time 
 
 @app.task(bind=True, ignore_result=False)
-# def ml_calc_features(self):
-#     i = 0
-#     total = 100
-#     time.sleep(20)
-#     self.update_state(
-#                     state='CALC_FEATURES_PROGRESS',
-#                     meta={
-#                         'current': i,
-#                         'total': total,
-#                     })
-#     i + 1
-
-def ml_calc_features(self):
+def ml_calc_features(self,
+                    images_path=settings.MEDIA_ROOT,
+                    npys_name='npys', # to store features numpy files 
+                    replace=False):
 
     """
-        Calculate and store features for all images.
+        Calculate and store features for new image images.
+        :param: image_path path to the media folder
+        :npys_name: extension of the feature files. Default is numpy extension `npys`
+        :param: replace if True then it will calculate for existing images too
     """
-    images_path=settings.MEDIA_ROOT
-    npys_name='npys' # to store features numpy files 
-    replace=False
-    scorer = SimilarityScorer()
+  
+    fe = FeatureExtractor() # deep learning (or any feature extractor)
+
+
     # new listings only
     query_set = []
     new_listings = Listing.objects.filter(Q(related_listing_1=None) & Q(related_listing_2=None))
@@ -253,7 +245,7 @@ def ml_calc_features(self):
     current = 0
     for listing in query_set:
         # get features
-        features = scorer.calc_listing_features(listing, images_path)
+        features = fe.calc_listing_features(listing, images_path)
         # save them into a npy file
         np.save(f'{images_path}{npys_name}{os.sep}{listing.id}.npy', features)
         self.update_state(
@@ -262,5 +254,6 @@ def ml_calc_features(self):
                         'current': current
                     })
         current += step
-        print(current)
-    return True
+
+        # to view it in Celery stdout
+        print(current) 

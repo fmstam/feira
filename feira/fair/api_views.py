@@ -1,6 +1,7 @@
 ## rest
-from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework import status
+from django.urls.base import reverse
+from rest_framework.generics import views, ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import serializers, status
 from rest_framework.permissions import DjangoObjectPermissions
 # backend filters
 from django_filters.rest_framework import DjangoFilterBackend 
@@ -25,13 +26,16 @@ from django.http import HttpResponseForbidden, response
 ## utils
 from django.utils import timezone
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+
 
 
 # local stuff
-from .serializers import ListingSerializer
 from .models import Listing
-from .serializers import ListingSerializer
+from .serializers import ListingSerializer, TaskSerializer
 from .views import OwnershipMixin
+from .ML import ml_calc_features
 
 
 class ListingAPIPagination(LimitOffsetPagination):
@@ -40,7 +44,6 @@ class ListingAPIPagination(LimitOffsetPagination):
 
 
 class ListingAPIView(ListAPIView):
-
     """
     A typical API view class with filter, search, and pagination capabilities
     """
@@ -58,7 +61,6 @@ class ListingAPIView(ListAPIView):
 
     # paginator
     pagination_class = ListingAPIPagination
-
 
 
 class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
@@ -83,7 +85,7 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
 
 # one class for view, update, and delete
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
-    serializer_class = ListingSerializer
+    serializer_class = TaskSerializer
     queryset = Listing.objects.all()
     permission_classes = [DjangoObjectPermissions] # with dj-guardina backend
     lookup_field = 'slug'
@@ -127,18 +129,69 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
 
 
 
-
+class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
+    serializer_class = TaskSerializer
+    task_execution_map ={ # tasks, will be moved to a config file or db
+        'ACF': {'method': ml_calc_features, 
+                'callback-end-point': 'fair:calc_features',
+                'timeout': 1000 # estimated from the task progress speed.
+                }
+    }
     
+    def create(self, request, *args, **kwargs):
+        """
+        Get the request from the client and create a task.
+        Each task will have an executor (Celery task) and a callback.
+        The client will call the callback to fetch the current progress of 
+        the task.
+        """
+        serializer = self.get_serializer(data=request.data)
+        #serializer.to_internal_value(data=request.data)
+        if not serializer.is_valid(raise_exception=True):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # release data from the serializer to update it
+        data = serializer.data
+        
+       
 
+        # lookup the task method
+        method =  self.task_execution_map[data['task_name']]['method']
+         # cache checkup
+        if not cache.has_key(data['task_name']):
+            task = method.delay()
+            task_id = task.id
+            cache.set(data['task_name'], {
+                        'task_id':task_id
+                    })
+        else: # already in the cache, return the cached task
+            task_id = cache.get(data['task_name'])['task_id']
+            
+        # attach task_id to the response data
+        data['task_id'] = task_id
+        # attach the task progress listener end-point
+        data['callback-end-point'] = reverse(self.task_execution_map[data['task_name']]['callback-end-point'])
+        # attach the timeout
+        data['timeout'] = self.task_execution_map[data['task_name']]['timeout']
 
+        # return response
+        return Response(data=data, status=status.HTTP_201_CREATED)
+        
+    # def post(self, request, *args, **kwargs):
+        
+    #     if request.data['method'] == 'ACF':
+    #         # check if we have already a cached running task
+    #         # if cache.has_key('ACF'):
+    #         #     return Response(status.HTTP_200_OK)
 
+    #         # else start the task
+    #         task = ml_calc_features.delay()
+    #         # cache it
+    #         cache.set('ACF', {
+    #             'task_id':task.task_id
+    #         })
+    #         # get response
+    #     response = super(views.APIView, self).post(request, *args, **kwargs)
 
-
-
-
-
-
-
-
-
+    #     return response
+          

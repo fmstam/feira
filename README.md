@@ -41,6 +41,11 @@ Feira currently supports two main applications:
 
  Looking at the current version, we can easily see the recommendation backend is working quite nice. Here are some examples:
 
+```
+  
+  celery -A feira worker -l INFO
+
+```
 > Note: Many items are generated automatically to populate the system. Therefore, some prices are not realistic :)
 
 

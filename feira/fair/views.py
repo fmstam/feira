@@ -178,27 +178,13 @@ class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
 
 method_decorator(csrf_protect, 'dispatch')        
 class DashboardView(LoginRequiredMixin, View):
-    http_method_names = ['get', 'post', 'head']
+    http_method_names = ['get', 'head']
     template_name = 'fair/dashboard.html'
     
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {
-            'ACF_IDLE': True, 
-            'CF_IDLE': True 
-            })
+        return render(request, self.template_name)
     
-    def post(self, request, *args, **kwargs):
-        if request.POST.get('method') == 'ACF':
-            # start the task
-            task = ml_calc_features.delay()
-            # update the dashboard which
-            return render(request, self.template_name, {
-                        'ACF_IDLE': False,
-                        'acf_task_id': task.task_id
-            })
-    
-
-
+ 
 class FeaturesCalcView(LoginRequiredMixin, View):
     """
     ML dashboard class
@@ -214,7 +200,7 @@ class FeaturesCalcView(LoginRequiredMixin, View):
         # ...
 
         ## check if task already has an id
-       
+  
         result = AsyncResult(kwargs['acf_task_id'])
         response_data = {
             'state': result.state,

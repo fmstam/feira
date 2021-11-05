@@ -10,6 +10,12 @@ from .models import Listing
 from .ML import TaskResult
 
  
+class TaskSerializer(serializers.Serializer):
+    task_name = serializers.CharField(min_length=2)
+    task_id   = serializers.SlugField(allow_blank=True)
+    action    = serializers.ChoiceField(choices=('START', 'STOP'))  
+
+    
 class TaskResultsSerializer(serializers.ModelSerializer):
     """
     Serializer for ML Celery tasks results 

@@ -7,7 +7,7 @@
 
     <div class="container main-container">
         <!-- <div class="row d-flex justify-content-center"> -->
-            <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3 ">
+            <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-3 g-2 ">
                     <!-- <div class="col-md-offset-1 col-md-4 content"> -->
                     <!-- 1. Analyze and calculate features ACF -->
                     <div class="col">
@@ -19,51 +19,65 @@
                                 <div class="clearfix mb-1"> 
                                     <div class="progress">
                                         <div class="progress-bar progress-bar-striped active" role="progressbar"
-                                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="ACF_task_progress">
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%;" id="ACF_task_progress">
                                           Pending
                                         </div>
                                       </div>
-                                      {% if ACF_IDLE %} 
-                                      <form action="" method="post">
-                                          {% csrf_token %}
-                                          <input type="hidden" name="method" value="ACF"/>
-                                          <input class="btn btn-primary" type="submit" value="Start"/>
-                                      </form>
-                                      {% endif %}
                                 </div>
+                                <button class="btn btn-primary btn-sm" id="ACF_btn" onclick="start(this, 'ACF');">Start</button>
                             </div>
                         </div>
                     </div> 
 
-                    <!-- 2. Calculate scores  CS-->
+                    <!-- 2. Calculate listings scores  CLS-->
                     <div class="col">
                         <div class="card shadow-sm"> 
                             <!-- put image here -->
                             <div class="card-body">    
                                 <h6 class="card-title"> Calculate scores </h6>
-                                <p class="card-text" id="CS_card_status"></p>
+                                <p class="card-text" id="CLS_card_status"></p>
                                 <div class="clearfix mb-1"> 
                                     <div class="progress">
                                         <div class="progress-bar progress-bar-striped active" role="progressbar"
-                                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="CS_task_progress">
+                                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="CLS_task_progress">
                                         </div>
                                       </div>
                                 </div>
+                                <button class="btn btn-primary btn-sm" id="CLS_btn" onclick="start(this, 'CLS');">Start</button>
                             </div>
                         </div>
                     </div> 
+
+                        <!-- 2. Create dummy listings CDL-->
+                        <div class="col">
+                            <div class="card shadow-sm"> 
+                                <!-- put image here -->
+                                <div class="card-body">    
+                                    <h6 class="card-title"> Create dummy listings </h6>
+                                    <p class="card-text" id="CDL_card_status"></p>
+                                    <div class="clearfix mb-1"> 
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-striped active" role="progressbar"
+                                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="CDL_task_progress">
+                                            </div>
+                                          </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" id="CDL_btn" onclick="start(this, 'CDL');">Start</button>
+                                </div>
+                            </div>
+                        </div> 
             </div>
     </div>
 
 
-{% if not ACF_IDLE %}
     <script>
-        function updateACFProgress (progressUrl) {
-            fetch(progressUrl).then(function(response) {
+        function updateProgress (url, method, timeout) {
+            fetch(url).then(function(response) {
                 response.json().then(function(data) {
                     if (data.state == 'SUCCESS'){
                         progress = '100%';
                         state = 'Finished'
+                        document.getElementById(`${method}_btn`).removeAttribute("disabled");
                     }
                     else{
                         progress = Math.round(100 * data.details.current) + '%';
@@ -76,20 +90,65 @@
                         if (data.state == 'PROGRESS'){
                             state = 'Processing ...'
                         }
-                        setTimeout(updateACFProgress, 500, progressUrl);
+                        setTimeout(updateProgress, timeout, url, method, timeout);
                     }
-                    document.getElementById("ACF_card_status").innerHTML = `State: ${state}`                    
-                    document.getElementById("ACF_task_progress").style.width = progress;
-                    document.getElementById("ACF_task_progress").innerHTML = progress;   
+                    document.getElementById(`${method}_card_status`).innerHTML = `State: ${state}`                    
+                    document.getElementById(`${method}_task_progress`).style.width = progress;
+                    document.getElementById(`${method}_task_progress`).innerHTML = progress;   
                 });
             });
         }
 
-            let progressUrl = '{% url "fair:calc_features" acf_task_id %}';  // django template usage
-            updateACFProgress(progressUrl);
+        function start(element, taskName){
+            // formulate a post request
+            const url = '{% url "fair:api_dash" %}';
+
+            (async () => {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        task_name: taskName, 
+                        task_id: '', 
+                        action: 'START'})
+                });
+                const jsonResponse = await response.json();
+                
+                if(jsonResponse['callback-end-point'] != undefined){
+                    // disable the button
+                    document.getElementById(element.id).setAttribute("disabled","disabled");
+                    progressUrl = jsonResponse['callback-end-point'] + jsonResponse['task_id']
+                    updateProgress(progressUrl, 
+                                   taskName,
+                                   jsonResponse['timeout'])
+                }                
+                })();
+                
+        }
+            
+    /** HELPERS **/            
+        // to get the cookie 
+        // from django official doc: https://docs.djangoproject.com/en/3.2/ref/csrf/            
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
     </script>
-    {% endif %}
-
-
+    
     {% endblock %}
     

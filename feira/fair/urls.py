@@ -5,13 +5,13 @@ from django.urls.resolvers import URLPattern
 from django.views.generic.base import TemplateView
 
 # views
-from .views import DashboardView, ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView, \
-    DashboardView, FeaturesCalcView
+from .views import DashboardView, FeaturesCalcView, ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView
+from .api_views import    DashboardAPIView
 from .api_views import ListingAPIView, ListingCreateAPIView, ListingRetrieveUpdateDestroyAPIView
 
 # helpers and ML
 from .helpers import create_listings, fix_slugs
-from .ML import SimilarityScorer
+from .ML import FeatureExtractor
 
 app_name ='fair'
 urlpatterns =[
@@ -20,7 +20,8 @@ urlpatterns =[
     path('random_listings/', create_listings ),
     path('fix_slugs/', fix_slugs ),
     # path('calc_scores/', SimilarityScorer().add_all_similarities ),
-    path('calc_features/<str:acf_task_id>/', FeaturesCalcView.as_view() , name="calc_features" ),
+    path('calc_features/<str:acf_task_id>/', FeaturesCalcView.as_view() , name="calc_features_task" ),
+    path('calc_features/', FeaturesCalcView.as_view() , name="calc_features" ),
     path('dash/', DashboardView.as_view() , name="dash" ),
 
     # path('update_scores/', SimilarityScorer().update_all_similarities ),
@@ -40,5 +41,6 @@ urlpatterns =[
     path('api/listings/', ListingAPIView.as_view(), name='api_listing'),
     path('api/listings/new/', ListingCreateAPIView.as_view(), name='api_create_a_listing'),
     path('api/listings/<slug:slug>/', ListingRetrieveUpdateDestroyAPIView.as_view(), name='api_rud_a_listing'),
+    path('api/dash/', DashboardAPIView.as_view() , name="api_dash" ),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

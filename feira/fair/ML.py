@@ -73,7 +73,6 @@ class FeatureExtractor():
     """
     def __init__(self,
                 metric=metrics.pairwise.cosine_similarity,
-               
                 image_input_size=224, # typical input shape for most nets
                 feature_extractor=None, # any pytorch nn.module 
                 preprocessor=None):
@@ -103,89 +102,6 @@ class FeatureExtractor():
         else:
             self.preprocessor = preprocessor
 
-    
-
-    # def add_all_similarities(self, request, calculate=False):
-    #     """
-    #     Calculate the similarities between all listings and store the scores in the similarly table (see models.py).
-    #     It will replace the existing scores in the similarity table.
-
-    #     This way, we do not need to re-calc the features each time the user views a listing.
-    #     A simple django query will return the related listings for the current item.
-    #     :param: calculate is True the features will be calculated, otherwise the will be loaded from pre-calculated from .npy files in media
-    #     """
-
-    #     # An efficient way would be to return a list of id and image tuples,
-    #     # and create mini-batches to extract features and calculate scores.
-    #     # However, for a large dataset this would require a larage memory.
-    #     # A memory friendly, yet a bit slower, is to iterate and calculate
-    #     # the similarity between each two listings.
-    #     # The similarity matrix/table is symmetric therefore we need to calculate
-    #     # it for lower (or upper) traingel of the matrix
-
-    #     # calculate ?
-    #     if calculate:
-    #         to_features = self.calc_listing_features
-    #     else: # otherwise load pre-calculated
-    #         to_features = self.load_listing_features
-
-    #     # clear the similarity table
-    #     Similarity.objects.all().delete()
-        
-    #     # order them by pk
-    #     listings = Listing.objects.order_by('pk') 
-
-    #     # this loop runs for sum(n-1), where n is the number of listings in the database
-    #     for listing_1, listing_2 in tqdm(itertools.combinations(listings, 2)): # unrepeated combinations
-    #         # get score
-    #         score = self.get_score(to_features(listing_1),
-    #                                to_features(listing_1))
-    #         # store it
-    #         Similarity(score=score, 
-    #                   listing_1=listing_1,
-    #                   listing_2=listing_2).save()
-           
-    #     return HttpResponseRedirect(reverse('home'))
-
-    # def update_all_similarities(self, request, calculate=False):
-        
-    #     """
-    #     The same as add_all_similarities but calculate scores of newly added listings and add them to the 
-    #     Similarity table.
-    #     """
-
-    #     # calculate ?
-    #     if calculate:
-    #         to_features = self.calc_listing_features
-    #     else: # otherwise load pre-calculated
-    #         to_features = self.load_listing_features
-            
-    #     new_listings = Listing.objects.filter(Q(related_listing_1=None) & Q(related_listing_2=None))
-    #     exist_listings = Listing.objects.exclude(Q(related_listing_1=None) & Q(related_listing_2=None))
-        
-    #     # new vs existing
-    #     for listing_1 in new_listings:
-    #         for listing_2 in tqdm(exist_listings):
-    #             # get score
-    #             score = self.get_score(to_features(listing_1),
-    #                                    to_features(listing_1))
-    #             # store it
-    #             Similarity(score=score, 
-    #                     listing_1=listing_1,
-    #                     listing_2=listing_2).save()
-
-    #     # new vs new
-    #     for listing_1, listing_2 in tqdm(itertools.combinations(new_listings, 2)): # unrepeated combinations
-    #         # get score
-    #         score = self.get_score(to_features(listing_1),
-    #                                    to_features(listing_1))
-    #         # store it
-    #         Similarity(score=score, 
-    #                   listing_1=listing_1,
-    #                   listing_2=listing_2).save()
-
-    #     return HttpResponseRedirect(reverse('home'))
-
     def calc_listing_features(self, listing, images_path) :
         # read the image
         input_image = Image.open(f'{images_path}{listing.image}')
@@ -201,25 +117,88 @@ class FeatureExtractor():
         return self.metric(listing_1_features, listing_2_features)
 
 
-    
+    def load_listing_features(self, listing, folder):
+        """
+        Load similarities from npys folder in the media folder 
+        """
+        npy_file = f'{folder}{os.sep}{listing.id}.npy'
+        # with open(npy_file, 'r') as file:
+        listing_features = np.load(npy_file, allow_pickle=True)
 
-    # def load_listing_features(self, listing):
-    #     """
-    #     Load similarities from npys folder in the media folder 
-    #     """
-    #     npy_file = f'{self.images_path}{self.npys_name}{os.sep}{listing.id}.npy'
-    #     with open(npy_file, 'r') as file:
-    #         listing_features = np.load(file)
-
-    #     return listing_features
+        return listing_features
 
         
+# Calculate listings scores  
+@app.task(bind=True, ignore_result=False, name='CLS')
+def ml_calc_scores(self,
+                   images_path=settings.MEDIA_ROOT,
+                   npys_name='npys', # to store features numpy files 
+                   calculate=False):
+        """
+        Calculate the similarities between all listings and store the scores in the similarly table (see models.py).
+        It will replace the existing scores in the similarity table.
 
-@app.task(bind=True, ignore_result=False)
+        This way, we do not need to re-calc the features each time the user views a listing.
+        A simple django query will return the related listings for the current item.
+        :param: calculate is True the features will be calculated, otherwise the will be loaded from pre-calculated from .npy files in media
+        """
+
+        # An efficient way would be to return a list of id and image tuples,
+        # and create mini-batches to extract features and calculate scores.
+        # However, for a large dataset this would require a larage memory.
+        # A memory friendly, yet a bit slower, is to iterate and calculate
+        # the similarity between each two listings.
+        # The similarity matrix/table is symmetric therefore we need to calculate
+        # it its lower (or upper) triangle
+
+        fe = FeatureExtractor() # deep learning (or any feature extractor)
+
+        # calculate ?
+        if calculate:
+            to_features = fe.calc_listing_features
+            params ={}
+        else: # otherwise load pre-calculated
+            to_features = fe.load_listing_features
+            params = {
+                      'folder': f'{images_path}{npys_name}'
+                     }
+        print(f'selected loader {to_features.__name__}')                     
+        # clear the similarity table
+        Similarity.objects.all().delete()
+        
+        # order them by pk
+        listings = Listing.objects.order_by('pk') 
+
+        # this loop runs for sum(n-1), where n is the number of listings in the database
+        n = len(listings) - 1
+        print(n)
+        step = 1 / ( (n * (n - 1)) / 2 )
+        print(step)
+        current = 0
+        for listing_1, listing_2 in itertools.combinations(listings, 2): # unrepeated combinations
+            # get score
+            score = fe.get_score(to_features(listing_1, **params),
+                                   to_features(listing_2, **params))
+            # store it
+            Similarity(score=score, 
+                      listing_1=listing_1,
+                      listing_2=listing_2).save()
+
+            self.update_state(
+                    state='PROGRESS',
+                    meta={
+                        'current': current
+                    })
+
+            current += step
+            # print(f'current: {current}, score: {score}')
+
+
+@app.task(bind=True, ignore_result=False, name='ACF')
 def ml_calc_features(self,
                     images_path=settings.MEDIA_ROOT,
                     npys_name='npys', # to store features numpy files 
-                    replace=False):
+                    replace=True):
 
     """
         Calculate and store features for new image images.

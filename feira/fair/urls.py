@@ -5,9 +5,9 @@ from django.urls.resolvers import URLPattern
 from django.views.generic.base import TemplateView
 
 # views
-from .views import DashboardView, FeaturesCalcView, ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView
-from .api_views import    DashboardAPIView
-from .api_views import ListingAPIView, ListingCreateAPIView, ListingRetrieveUpdateDestroyAPIView
+from .views import  ListingView, ListingCreateView, ListingUpdateView, ListingDeleteView, DashboardView
+from .api_views import ListingAPIView, ListingCreateAPIView, ListingRetrieveUpdateDestroyAPIView, \
+                        ProgressCallBackAPIView, DashboardAPIView
 
 # helpers and ML
 from .helpers import create_listings, fix_slugs
@@ -15,15 +15,12 @@ from .ML import FeatureExtractor
 
 app_name ='fair'
 urlpatterns =[
-    
     # ML and db views
     path('random_listings/', create_listings ),
     path('fix_slugs/', fix_slugs ),
     # path('calc_scores/', SimilarityScorer().add_all_similarities ),
-    path('calc_features/<str:acf_task_id>/', FeaturesCalcView.as_view() , name="calc_features_task" ),
-    path('calc_features/', FeaturesCalcView.as_view() , name="calc_features" ),
     path('dash/', DashboardView.as_view() , name="dash" ),
-
+    
     # path('update_scores/', SimilarityScorer().update_all_similarities ),
 
     # typical views
@@ -38,9 +35,11 @@ urlpatterns =[
     path('listings/<slug:slug>/delete', ListingDeleteView.as_view(), name='delete_a_listing'),
 
     # API views
-    path('api/listings/', ListingAPIView.as_view(), name='api_listing'),
-    path('api/listings/new/', ListingCreateAPIView.as_view(), name='api_create_a_listing'),
-    path('api/listings/<slug:slug>/', ListingRetrieveUpdateDestroyAPIView.as_view(), name='api_rud_a_listing'),
-    path('api/dash/', DashboardAPIView.as_view() , name="api_dash" ),
+    path('api/v1/listings/', ListingAPIView.as_view(), name='api_listing'),
+    path('api/v1/listings/new/', ListingCreateAPIView.as_view(), name='api_create_a_listing'),
+    path('api/v1/listings/<slug:slug>/', ListingRetrieveUpdateDestroyAPIView.as_view(), name='api_rud_a_listing'),
+    path('api/v1/dash/', DashboardAPIView.as_view() , name="api_dash" ),
+    path('api/v1/dashprogress/<str:acf_task_id>/', ProgressCallBackAPIView.as_view() , name="api_dashprogress" ),
+    path('api/v1/dashprogress/', ProgressCallBackAPIView.as_view() , name="api_dashprogress" ),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

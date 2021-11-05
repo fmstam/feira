@@ -44,6 +44,9 @@ Feira currently supports two main applications:
 ```
   
   celery -A feira worker -l INFO
+  sudo systemctl [start, stop, enable, restart] redis
+
+
 
 ```
 > Note: Many items are generated automatically to populate the system. Therefore, some prices are not realistic :)

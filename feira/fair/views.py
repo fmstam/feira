@@ -39,6 +39,7 @@ class OwnershipMixin():
         return super(OwnershipMixin, self).dispatch(request, *args, **kwargs)
 
 
+
 # view class
 class ListingView(View):
     #form_class = ListingForm
@@ -113,6 +114,8 @@ class ListingView(View):
                      listing_dict
                      )
 
+
+
 # create new class
 method_decorator(csrf_protect, 'dispatch')
 class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
@@ -135,6 +138,8 @@ class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
         self.object.owner = self.request.user # set the fk
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
 
 # edit class
 method_decorator(csrf_protect, 'dispatch')
@@ -159,6 +164,8 @@ class ListingUpdateView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         self.object.owner = self.request.user # set the fk
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
 
 method_decorator(csrf_protect, 'dispatch')
 class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, DeleteView):
@@ -185,30 +192,3 @@ class DashboardView(LoginRequiredMixin, View):
         return render(request, self.template_name)
     
  
-class FeaturesCalcView(LoginRequiredMixin, View):
-    """
-    ML dashboard class
-    """
-    http_method_names = ['get', 'head']
-    template_name = 'fair/dashboard.html'
-
-    def get(self, request, *args, **kwargs):
-        """
-        Typical GET handler
-        """
-        ## check if user is allowed to access it.
-        # ...
-
-        ## check if task already has an id
-  
-        result = AsyncResult(kwargs['acf_task_id'])
-        response_data = {
-            'state': result.state,
-            'details': result.info, # the progress is here, see 
-        }
-        # if not finished yet
-        if response_data['state'] != state(SUCCESS):
-            # pending or started   
-            if (response_data['state'] == state(PENDING)) or (response_data['state'] == state(STARTED)):
-                response_data['details']['current'] = 0
-        return HttpResponse(json.dumps(response_data), content_type='application/json')

@@ -1,11 +1,14 @@
 ## rest
+from os import replace
 from django.urls.base import reverse
 from rest_framework.generics import views, ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import serializers, status
 from rest_framework.permissions import DjangoObjectPermissions
+
 # backend filters
 from django_filters.rest_framework import DjangoFilterBackend 
 from rest_framework.filters import SearchFilter
+
 # pagination
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -29,13 +32,15 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 
-
-
 # local stuff
 from .models import Listing
 from .serializers import ListingSerializer, TaskSerializer
 from .views import OwnershipMixin
-from .ML import ml_calc_features
+from .ML import ml_calc_features, ml_calc_scores
+
+# celery 
+from celery.result import AsyncResult
+from celery.states import state, PENDING, SUCCESS, STARTED
 
 
 class ListingAPIPagination(LimitOffsetPagination):
@@ -127,15 +132,24 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
         return response
 
 
-
-
 class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
     serializer_class = TaskSerializer
-    task_execution_map ={ # tasks, will be moved to a config file or db
+    task_execution_map ={ 
+        # tasks, will be moved to a config file or db
         'ACF': {'method': ml_calc_features, 
-                'callback-end-point': 'fair:calc_features',
+                'callback-end-point': 'fair:api_dashprogress',
                 'timeout': 1000 # estimated from the task progress speed.
-                }
+                },
+
+        'CLS': {'method': ml_calc_scores, 
+                'callback-end-point': 'fair:api_dashprogress',
+                'timeout': 1000 # estimated from the task progress speed.
+                },
+        
+        'CDL': {'method': ml_calc_features, 
+                'callback-end-point': 'fair:api_dashprogress',
+                'timeout': 1000 # estimated from the task progress speed.
+                }       
     }
     
     def create(self, request, *args, **kwargs):
@@ -145,6 +159,25 @@ class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
         The client will call the callback to fetch the current progress of 
         the task.
         """
+        ## TODO: check if user is allowed to access it.
+        # only admin can access it will need to use permissions here
+
+        def create_task(method, task_name, clean_slate=False):
+            """
+            Create a task, cache it, and return its id
+            """
+            # clean-slate?
+            if cache.has_key(task_name) and clean_slate:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            # all good, create a new task and cache it
+            task = method.delay()
+            task_id = task.id
+            cache.set(task_name, {
+                        'task_id':task_id
+                    })
+            return task_id
+            
         serializer = self.get_serializer(data=request.data)
         #serializer.to_internal_value(data=request.data)
         if not serializer.is_valid(raise_exception=True):
@@ -152,21 +185,24 @@ class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
 
         # release data from the serializer to update it
         data = serializer.data
-        
-       
 
         # lookup the task method
         method =  self.task_execution_map[data['task_name']]['method']
-         # cache checkup
+         # not cached, create it
         if not cache.has_key(data['task_name']):
-            task = method.delay()
-            task_id = task.id
-            cache.set(data['task_name'], {
-                        'task_id':task_id
-                    })
-        else: # already in the cache, return the cached task
+            task_id = create_task(method, data['task_name'], clean_slate=True)
+        else: # already in the cache
             task_id = cache.get(data['task_name'])['task_id']
+            # check it is status
+            task_results = AsyncResult(task_id)
             
+            # check if it is zombi task
+            if not task_results or task_results.state >= state(SUCCESS): 
+                # TODO: NEED TO DELETE ANY EXISTING BEFORE CREATION
+
+                # then create a new one
+                task_id = create_task(method, data['task_name'])
+
         # attach task_id to the response data
         data['task_id'] = task_id
         # attach the task progress listener end-point
@@ -177,21 +213,31 @@ class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
         # return response
         return Response(data=data, status=status.HTTP_201_CREATED)
         
-    # def post(self, request, *args, **kwargs):
-        
-    #     if request.data['method'] == 'ACF':
-    #         # check if we have already a cached running task
-    #         # if cache.has_key('ACF'):
-    #         #     return Response(status.HTTP_200_OK)
 
-    #         # else start the task
-    #         task = ml_calc_features.delay()
-    #         # cache it
-    #         cache.set('ACF', {
-    #             'task_id':task.task_id
-    #         })
-    #         # get response
-    #     response = super(views.APIView, self).post(request, *args, **kwargs)
 
-    #     return response
-          
+class ProgressCallBackAPIView(LoginRequiredMixin, ListAPIView):
+        """
+            This is the end-point that used by the frontend to get the current progress 
+            of celery backend tasks.
+        """
+
+        def get(self, request, *args, **kwargs):
+            """
+            Typical GET handler
+            """
+            ## TODO: check if user is allowed to access it.
+            # only admin can access it will need to use permissions here
+
+            ## check if task already has an id
+    
+            result = AsyncResult(kwargs['acf_task_id'])
+            response_data = {
+                'state': result.state,
+                'details': result.info, # the progress is here, see 
+            }
+            # if not finished yet
+            if response_data['state'] != state(SUCCESS):
+                # pending or started   
+                if (response_data['state'] == state(PENDING)) or (response_data['state'] == state(STARTED)):
+                    response_data['details']['current'] = 0
+            return response.HttpResponse(json.dumps(response_data), content_type='application/json')

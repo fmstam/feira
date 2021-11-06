@@ -25,10 +25,6 @@ Main requirements:
 </p>
 
 
-<p align="center">
-  <img src="images/celery_dash.png">
-  <br><b> ML backend services </b>
-</p>
 
 ## Current apps:
 Feira currently supports two main applications:
@@ -38,7 +34,12 @@ Feira currently supports two main applications:
 > Note: more apps will be added to the project with more machine learning support in the next few sprints.
 
 ### Fair:
- Currently, Fair is the core of the marketplace. It allows users to post their listings. In the current version, no actual buying functionalities are added but they are in the backlog and will be added in the in the next sprints. The focus of the last sprint (two weeks) was establishing various functionalities like ML support, encryption, security, and auditing. In the current sprint the focus was to develop API support using *REST API* framework and to develop **Celery** tasks and use **Redis** service to deliver results. 
+ Currently, Fair is the core of the marketplace. It allows users to post their listings. In the current version, no actual buying functionalities are added but they are in the backlog and will be added in the in the next sprints. The focus of the last sprint (two weeks) was establishing various functionalities like ML support, encryption, security, and auditing. In the current sprint the focus is to develop API support using *REST API* framework and to develop **Celery** tasks and use **Redis** service to deliver results. These are now available in the dashboard as shown in the next figure.
+
+ <p align="center">
+  <img src="images/celery_dash.png">
+  <br><b> ML backend services </b>
+</p>
  
  Moreover, some security tests were added.
  This sprint still in the middle and more features will be added.

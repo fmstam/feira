@@ -1,22 +1,31 @@
-from django import shortcuts
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render,  get_object_or_404, get_list_or_404, redirect
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic import ListView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 
 
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, get_list_or_404
+
 from django.db.models import Q
 
 from .auth import AuthTools
 from .forms import ListingForm
 from .models import Listing, Similarity
 
+# ML and celery tasks
+from .ML import ml_calc_features
 
+import celery
+from celery.result import AsyncResult
+from celery.states import state, PENDING, SUCCESS, STARTED
+
+# utils
+import json
 
 class OwnershipMixin():
     """
@@ -30,9 +39,11 @@ class OwnershipMixin():
         return super(OwnershipMixin, self).dispatch(request, *args, **kwargs)
 
 
+
 # view class
-class ListingView(CreateView):
-    form_class = ListingForm
+class ListingView(View):
+    #form_class = ListingForm
+    http_method_names = ['get', 'head']
     
     def get_listing(self, filter, single=False):
         """
@@ -77,7 +88,7 @@ class ListingView(CreateView):
          For example, looking up all listing of a given owner returns a list of listing
          while looking up a single listing by its pk returns a single listing
         """
-        
+                
         if kwargs: # any filters?
             # multiple listing filters
             if 'owner_id' in kwargs.keys():  # for a specific user
@@ -104,6 +115,7 @@ class ListingView(CreateView):
                      )
 
 
+
 # create new class
 method_decorator(csrf_protect, 'dispatch')
 class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
@@ -126,6 +138,7 @@ class ListingCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
         self.object.owner = self.request.user # set the fk
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
 
 
 # edit class
@@ -153,11 +166,11 @@ class ListingUpdateView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         return HttpResponseRedirect(self.get_success_url())
 
 
+
 method_decorator(csrf_protect, 'dispatch')
 class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin, DeleteView):
     model = Listing
     success_message = "Listing is deleted successfully"
-
 
     def get_success_url(self, **kwargs) -> str:
         """instead of using reverse_lazy"""
@@ -168,3 +181,14 @@ class ListingDeleteView(SuccessMessageMixin, OwnershipMixin, LoginRequiredMixin,
         Make sure the user is logged in
         """
         return reverse('accounts:login')
+
+
+method_decorator(csrf_protect, 'dispatch')        
+class DashboardView(LoginRequiredMixin, View):
+    http_method_names = ['get', 'head']
+    template_name = 'fair/dashboard.html'
+    
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+    
+ 

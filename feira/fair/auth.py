@@ -2,6 +2,9 @@
     Permissions and Authentication helpers
 """
 
+
+
+
 class AuthTools():
     """
     A helper class to manage the permissions and tokens
@@ -18,20 +21,27 @@ class AuthTools():
     DELETE_LISTING = "fair.delete_listing"
 
     # logs
-    VIEW_ACTIVITY_LOG   = "api.view_activity_log"
-    CHANGE_ACTIVITY_LOG = "api.change_activity_log"
+    VIEW_ACTIVITY_LOG   = "fair.view_activity_log"
+    CHANGE_ACTIVITY_LOG = "fair.change_activity_log"
 
     # ML 
-    REBASE_ML             = "api.rebase_ml"
-    CHANGE_CATEGORIES     = "api.change_categories"
-    CREATE_DUMMY_LISTINGS = "api.create_dummy_lists"
+    VIEW_DASHBOARD      = "fair.view_dashboard"
+    RUN_DASHBOARD_TASKS      = "fair.view_dashboard"
+
+    CHANGE_CATEGORIES     = "fair.change_categories"
+    CREATE_DUMMY_LISTINGS = "fair.create_dummy_lists"
 
     
     # group_name: [api.privilege, ...] dictionary
     group_permissions = {
                         "manager": [VIEW_LISTING, 
                                     CHANGE_LISTING,
-                                    DELETE_LISTING],
+                                    DELETE_LISTING,
+                                    VIEW_DASHBOARD,
+                                    RUN_DASHBOARD_TASKS,
+                                    # CHANGE_CATEGORIES,
+                                    # CREATE_DUMMY_LISTINGS
+                                    ],
                                     
                         "user": [VIEW_LISTING,
                                 CHANGE_LISTING,
@@ -40,9 +50,23 @@ class AuthTools():
     
     @staticmethod
     def initialize(sender, **kwargs):
+        
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+        # create permissions for dashboard
+        # via modeless permission objects
+        content_type = ContentType.objects.get_for_model(Permission)
+
+        # dashboard permissions
+        Permission.objects.create(content_type=content_type,
+                                  name='view dashboard', codename='VIEW_DASHBOARD',)
+
+        Permission.objects.create(content_type=content_type,
+                                  name='run a dashboard task', codename='RUN_DASHBOARD_TASKS',)
+
         AuthTools.assign_permissions(AuthTools.group_permissions)
 
-   
+
     @staticmethod
     def assign_permissions (group_permissions_dict): 
         """

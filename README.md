@@ -6,6 +6,9 @@ Main requirements:
 - Python 
 - Pytorch
 - Django
+- Django REST Framework
+- Celery
+- Redis server
 - SQLite
 - Javascript
 - HTML 5

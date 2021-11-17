@@ -43,7 +43,7 @@ class TaskResult():
     def collect(cls, results_collector, **kwargs):
         """
             A class method to collect celery tasks' results
-            :param: results_collector
+            :param: results_collector a results collector object 
         """
         
         if 'task_id' in kwargs.keys():
@@ -68,8 +68,8 @@ class TaskResult():
 
 class FeatureExtractor():
     """
-    Calculate the similarities between listings and store the similarity scores in a table.
-    NOTE: This class requires a two-factor auth which will be added int he next sprint.
+    Calculate the similarities between listings and store their scores in a table.
+    NOTE: This class requires a two-factor auth which will be added int the next sprint.
     """
     def __init__(self,
                 metric=metrics.pairwise.cosine_similarity,
@@ -119,7 +119,7 @@ class FeatureExtractor():
 
     def load_listing_features(self, listing, folder):
         """
-        Load similarities from npys folder in the media folder 
+        Load similarities from `npys` folder in the media folder 
         """
         npy_file = f'{folder}{os.sep}{listing.id}.npy'
         # with open(npy_file, 'r') as file:
@@ -145,11 +145,11 @@ def ml_calc_scores(self,
 
         # An efficient way would be to return a list of id and image tuples,
         # and create mini-batches to extract features and calculate scores.
-        # However, for a large dataset this would require a larage memory.
+        # However, for a large dataset this would require large memory.
         # A memory friendly, yet a bit slower, is to iterate and calculate
         # the similarity between each two listings.
         # The similarity matrix/table is symmetric therefore we need to calculate
-        # it its lower (or upper) triangle
+        # it its lower (or upper) traingle which leave us with only half of the work to deal with.
 
         fe = FeatureExtractor() # deep learning (or any feature extractor)
 
@@ -172,7 +172,7 @@ def ml_calc_scores(self,
         # this loop runs for sum(n-1), where n is the number of listings in the database
         n = len(listings) - 1
         print(n)
-        step = 1 / ( (n * (n - 1)) / 2 )
+        step = 1 / ( (n * (n - 1)) / 2 ) # step size 
         print(step)
         current = 0
         for listing_1, listing_2 in itertools.combinations(listings, 2): # unrepeated combinations
@@ -201,15 +201,14 @@ def ml_calc_features(self,
                     replace=True):
 
     """
-        Calculate and store features for new image images.
+        Calculate and store features for new images.
         :param: image_path path to the media folder
-        :npys_name: extension of the feature files. Default is numpy extension `npys`
-        :param: replace if True then it will calculate for existing images too
+        :param: npys_name: extension of the feature files. Default is numpy extension `npys`
+        :param: replace: if True, it will calculate for existing images too
     """
   
     fe = FeatureExtractor() # deep learning (or any feature extractor)
-
-
+    
     # new listings only
     query_set = []
     new_listings = Listing.objects.filter(Q(related_listing_1=None) & Q(related_listing_2=None))

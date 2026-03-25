@@ -28,7 +28,7 @@ def generate_random_token(length=20, initial='tkn'):
         if method == 1: # chars
             sub_token = random.sample(string.ascii_letters, size)
         elif method == 2: # digit
-            sub_token = random.sample(string.ascii_letters, size)
+            sub_token = random.sample(string.digits, size)
         elif method == 3:  # both
             sub_token = random.sample(string.ascii_letters + string.digits, size)
         elif method == 4:   # random pickup

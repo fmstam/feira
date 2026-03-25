@@ -1,9 +1,8 @@
 ## rest
-from os import replace
 from django.urls.base import reverse
 from rest_framework.generics import views, ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import serializers, status
-from rest_framework.permissions import DjangoObjectPermissions
+from rest_framework.permissions import DjangoObjectPermissions, IsAdminUser
 
 # backend filters
 from django_filters.rest_framework import DjangoFilterBackend 
@@ -77,7 +76,7 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
  
         ## use caching protect against flooding
         # a request is already in the cache?
-        if cache.has_key('listing_created'):
+        if 'listing_created' in cache:
             # request received but no listing was created
             return Response(status.HTTP_200_OK) 
 
@@ -91,7 +90,7 @@ class ListingCreateAPIView(LoginRequiredMixin, CreateAPIView):
 
 # one class for view, update, and delete
 class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
-    serializer_class = TaskSerializer
+    serializer_class = ListingSerializer
     queryset = Listing.objects.all()
     permission_classes = [DjangoObjectPermissions] # with dj-guardina backend
     lookup_field = 'slug'
@@ -135,6 +134,7 @@ class ListingRetrieveUpdateDestroyAPIView(LoginRequiredMixin, RetrieveUpdateDest
 
 class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
     serializer_class = TaskSerializer
+    permission_classes = [IsAdminUser]
     task_execution_map ={ 
         # tasks, will be moved to a config file or db
         'ACF': {'method': ml_calc_features, 
@@ -168,7 +168,7 @@ class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
             Create a task, cache it, and return its id
             """
             # clean-slate?
-            if cache.has_key(task_name) and clean_slate:
+            if task_name in cache and clean_slate:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             # all good, create a new task and cache it
@@ -190,7 +190,7 @@ class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
         # lookup the task method
         method =  self.task_execution_map[data['task_name']]['method']
          # not cached, create it
-        if not cache.has_key(data['task_name']):
+        if data['task_name'] not in cache:
             task_id = create_task(method, data['task_name'], clean_slate=True)
         else: # already in the cache
             task_id = cache.get(data['task_name'])['task_id']
@@ -218,16 +218,15 @@ class DashboardAPIView(LoginRequiredMixin, CreateAPIView):
 
 class ProgressCallBackAPIView(LoginRequiredMixin, ListAPIView):
         """
-            This is the end-point that used by the frontend to get the current progress 
+            This is the end-point that used by the frontend to get the current progress
             of celery backend tasks.
         """
+        permission_classes = [IsAdminUser]
 
         def get(self, request, *args, **kwargs):
             """
             Typical GET handler
             """
-            ## TODO: check if user is allowed to access it.
-            # only admin can access it will need to use permissions here
 
             ## check if task already has an id
     

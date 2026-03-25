@@ -46,20 +46,23 @@ class TaskResult():
             :param: results_collector a results collector object 
         """
         
-        if 'task_id' in kwargs.keys():
-            task_id = kwargs['task_id']
+        task_id = kwargs.get('task_id')
+        task_state = 'UNKNOWN'
+        current_results = None
+
+        if task_id:
             response_data = results_collector(task_id)
             task_state = response_data.state
             current_results = response_data.info
 
             # if not finished yet
-            if response_data['state'] != state(SUCCESS):
-                # pending or started   
-                if (response_data['state'] == state(PENDING)) or (response_data['state'] == state(STARTED)):
+            if task_state != state(SUCCESS):
+                # pending or started
+                if task_state == state(PENDING) or task_state == state(STARTED):
                     current_results = None
 
         snapshot = cls(task_id=task_id,
-                      task_state=state,
+                      task_state=task_state,
                       current_results=current_results)
         
         

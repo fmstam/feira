@@ -4,7 +4,6 @@ Serlizers for the listing model
 """
 
 
-from django.template.defaultfilters import default
 from rest_framework import serializers
 from .models import Listing
 from .ML import TaskResult

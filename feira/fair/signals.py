@@ -30,7 +30,7 @@ def pre_save_listing_protection(sender,
                                 **kwargs):
     try:
         object = sender.objects.get(pk=instance.pk)
-    except:
+    except Listing.DoesNotExist:
         return # all new, just ignore
     else: # check for any unacceptable modification
         if instance.owner != object.owner: # listing owner can be changed
